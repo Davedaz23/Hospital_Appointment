@@ -1,20 +1,54 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack'; 
+import SearchResults from './SearchResults'; // Example screen for search results
+import MainContent from './src/screen/main';
+import Login from './src/screen/Login';
+import Appointment from './src/screen/appointment';
+import PatientRegistration from './src/screen/PatientRegistration1';
+// import FooterMenu from './src/screen/FooterMenu';
+import Hospitals from './src/screen/Hospitals';
+import About from './src/screen/About';
+import Contact from './src/screen/Contact';
+import Profile from './src/screen/Profile';
+import OtpScreen from './src/screen/Otp';
+import AppointmentList from './src/screen/AppointmentList';
+import HospitalRegistration from './src/screen/HospitalRegistration';
 
-export default function App() {
+const Stack = createStackNavigator();
+
+const App = () => {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen
+          name="Login"
+          component={Login} // Your Header component is now part of the navigation stack
+          options={{ title: 'Care4You' }}
+        />
+        <Stack.Screen
+          name="MainContent"
+          component={MainContent}
+          options={{ title: 'Main Content' }}
+        />
+        {/* <Stack.Screen name="Login" component={Login} /> */}
+        <Stack.Screen name="PatientRegistration" component={PatientRegistration} />
+        <Stack.Screen name="Appointment" component={Appointment} />
+        <Stack.Screen name="Hospitals" component={Hospitals} />
+        <Stack.Screen name="About" component={About} />
+        <Stack.Screen name="Profile" component={Profile} />
+        <Stack.Screen name="Contact" component={Contact} />
+        <Stack.Screen name="HospitalRegistration" component={HospitalRegistration} />
+        <Stack.Screen name="AppointmentList" component={ AppointmentList } />
+        <Stack.Screen name="OtpScreen" component={ OtpScreen } />
+        <Stack.Screen
+          name="SearchResults"
+          component={SearchResults} // Example screen for search results
+          options={{ title: 'Search Results' }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;

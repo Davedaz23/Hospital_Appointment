@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "145378113873",
+    "project_id": "trip-e9894",
+    "storage_bucket": "trip-e9894.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:145378113873:android:19be86a0ddc93695147b70",
+        "android_client_info": {
+          "package_name": "com.example.trip"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWLOfCyXXVzr50FaCI8uPFx0EStcc5L-8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:145378113873:android:9833ac125ce5930b147b70",
+        "android_client_info": {
+          "package_name": "com.medicalappointmentapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWLOfCyXXVzr50FaCI8uPFx0EStcc5L-8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
