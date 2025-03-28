@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Switch, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons'; // For icons
 import FooterMenu from './FooterMenu';
+import LogoutButton from './LogoutButton';
 
 const Profile = ({ navigation }) => {
   const [isDarkMode, setIsDarkMode] = useState(false); // State for dark mode
@@ -81,11 +82,13 @@ const Profile = ({ navigation }) => {
         </TouchableOpacity>
 
         {/* Logout */}
-        <TouchableOpacity style={styles.settingItem} onPress={() => navigation.navigate('Login')}>
+        {/* <TouchableOpacity style={styles.settingItem} onPress={() => navigation.navigate('Login')}>
           <Text style={[styles.settingText, isDarkMode && styles.darkText]}>Logout</Text>
           <Ionicons name="log-out" size={20} color={isDarkMode ? '#fff' : '#000'} />
-        </TouchableOpacity>
-      </View>
+        </TouchableOpacity> */}
+
+<LogoutButton isDarkMode={isDarkMode} styles={styles} />
+</View>
       <FooterMenu />
     </View>
   );

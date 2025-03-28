@@ -1,30 +1,46 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, StyleSheet, Alert } from "react-native";
-import axios from "axios";
+import { View, Text, ScrollView, StyleSheet, Alert, RefreshControl } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import PropTypes from "prop-types";
 import FooterMenu from "./FooterMenu";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import db from '../config/firestoreConfig'; // Import your Firestore configuration
 
 // Phone number validation function
 const isValidPhoneNumber = (phoneNumber) => {
-  const phoneRegex = /^[0-9]{10}$/; // Example: Adjust regex to match your phone number format
+  const phoneRegex = /^\+?[0-9]{10,15}$/; // Adjust regex for international phone formats
   return phoneRegex.test(phoneNumber);
 };
 
-const AppointmentList = ( {route} ) => {
-  
-  const { phoneNumber } = route.params; // Extract phoneNumber from route params
-console.log(phoneNumber)
-
+const AppointmentList = () => {
   const [appointments, setAppointments] = useState([]);
+  const [phoneNumber, setPhoneNumber] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
-    const fetchAppointments = async () => {
-      if (!phoneNumber) {
-        Alert.alert("Error", "Phone number is not provided.");
-        return;
+    const fetchPhoneNumber = async () => {
+      try {
+        const storedPhone = await AsyncStorage.getItem('userPhone');
+        if (storedPhone) {
+          const cleanedPhone = storedPhone.slice(1).replace(/\D/g, '').trim(); // Remove the first character and clean the phone number
+          setPhoneNumber(`+${cleanedPhone}`); // Prepend '+' to the cleaned phone
+        } else {
+          Alert.alert("Error", "Phone number not found in storage.");
+        }
+      } catch (error) {
+        console.error("Error fetching phone number:", error);
+        Alert.alert("Error", "Failed to fetch phone number.");
       }
+    };
+
+    fetchPhoneNumber();
+  }, []);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      if (!phoneNumber) return; // Wait for phone number to be set
 
       // Validate phone number
       if (!isValidPhoneNumber(phoneNumber)) {
@@ -33,17 +49,19 @@ console.log(phoneNumber)
       }
 
       try {
-        const response = await axios.get(`http://localhost:5000/api/appoints`, {
-          params: { phoneNumber }, // Use the passed phoneNumber prop
-        });
+        const appointmentsRef = collection(db, 'appointments');
+        const q = query(appointmentsRef, where('phoneNumber', '==', phoneNumber)); // Use phoneNumber directly
+        const querySnapshot = await getDocs(q);
 
-        console.log("API Response:", response.data);
-
-        // Set the appointments in state only if they exist
-        if (Array.isArray(response.data) && response.data.length > 0) {
-          setAppointments(response.data.patientId);
+        // Check if appointments exist
+        if (!querySnapshot.empty) {
+          const appointmentsList = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setAppointments(appointmentsList);
         } else {
-          Alert.alert("Info", "No appointments found for this phone number.");
+          Alert.alert("Info", "No appointments found for this phone number. ");
         }
       } catch (error) {
         console.error("Error fetching appointments:", error); // Log the error
@@ -56,54 +74,64 @@ console.log(phoneNumber)
 
   // Error handling function
   const handleError = (error) => {
-    if (error.response) {
-      console.error("Error fetching appointments:", error.response.data);
-      Alert.alert("Error", error.response.data.error || "Failed to fetch appointments. Please try again later.");
-    } else if (error.request) {
-      console.error("No response received:", error.request);
-      Alert.alert("Error", "No response from server. Please check your connection.");
-    } else {
-      console.error("Error setting up request:", error.message);
-      Alert.alert("Error", "An unexpected error occurred. Please try again.");
-    }
+    console.error("Error fetching appointments:", error);
+    Alert.alert("Error", "Failed to fetch appointments. Please try again later.");
+  };
+
+  // Function to refresh the appointment list
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchAppointments(); // Call the fetchAppointments function to refresh data
+    setRefreshing(false);
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Appointment List</Text>
-      {appointments.length > 0 ? (
-        appointments.map((appointment) => (
-          <View key={appointment.id} style={styles.card}>
-            <Text style={styles.cardTitle}>{appointment.fullName}</Text>
-            <Text style={styles.cardText}>Email: {appointment.email}</Text>
-            <Text style={styles.cardText}>Phone: {appointment.phoneNumber}</Text>
-            <Text style={styles.cardText}>Hospital: {appointment.hospitalName || "N/A"}</Text>
-            <Text style={styles.cardText}>Date: {new Date(appointment.app_date).toDateString()}</Text>
-            <Text style={styles.cardText}>Address: {appointment.address}</Text>
-            <Text style={styles.cardText}>Description: {appointment.description}</Text>
-          </View>
-        ))
-      ) : (
-        <Text style={styles.noDataText}>No appointments found.</Text>
-      )}
+    <View style={styles.container}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <Text style={styles.title}>Appointment List</Text>
+        {appointments.length > 0 ? (
+          appointments.map((appointment) => (
+            <View key={appointment.id} style={styles.card}>
+              <Text style={styles.cardTitle}>{appointment.fullName}</Text>
+              <Text style={styles.cardText}>Email: {appointment.email}</Text>
+              <Text style={styles.cardText}>Phone: {appointment.phoneNumber}</Text>
+              <Text style={styles.cardText}>Hospital: {appointment.hospitalName || "N/A"}</Text>
+              <Text style={styles.cardText}>Date: {new Date(appointment.app_date).toDateString()}</Text>
+              <Text style={styles.cardText}>Address: {appointment.address}</Text>
+              <Text style={styles.cardText}>Description: {appointment.description}</Text>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.noDataText}>No appointments found.</Text>
+        )}
+      </ScrollView>
 
-<View style={styles.footer}>
+      <View style={styles.footer}>
         <FooterMenu />
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
 // Prop validation
 AppointmentList.propTypes = {
-  phoneNumber: PropTypes.string.isRequired,
+  route: PropTypes.object,
 };
 
 // Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: "space-between", // Ensure footer stays at bottom
+  },
+  scrollContent: {
     padding: 20,
+    flexGrow: 1, // Allows ScrollView to take up remaining space
   },
   title: {
     fontSize: 24,
@@ -137,12 +165,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   footer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 60, // Set a fixed height for the footer
-    backgroundColor: "white", // Ensure the footer has a background color
+    padding: 10,
+    backgroundColor: "#fff",
     borderTopWidth: 1,
     borderTopColor: "#ccc",
   },

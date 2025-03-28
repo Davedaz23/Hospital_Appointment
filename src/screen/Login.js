@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { 
-  View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, ImageBackground, ActivityIndicator 
+  View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, ImageBackground, ActivityIndicator, Image 
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import CountryPicker from "react-native-country-picker-modal";
@@ -13,11 +13,11 @@ const Login = () => {
   const navigation = useNavigation();
   const [loginMethod, setLoginMethod] = useState("phone");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState("");   
   const [countryCode, setCountryCode] = useState("+251"); 
   const [country, setCountry] = useState({});
   const [loading, setLoading] = useState(true); // Loading state
-
+     
   useEffect(() => {
     const checkStoredPhone = async () => {
       const storedPhone = await AsyncStorage.getItem('userPhone');
@@ -39,17 +39,23 @@ const Login = () => {
       Alert.alert("Error", "Please enter your email.");
       return;
     }
-
+  
     try {
       const identifier = loginMethod === "phone" 
         ? `${countryCode}${phoneNumber}` 
         : email;
-
+  
       const userDocRef = doc(db, 'users', identifier);
       const docSnap = await getDoc(userDocRef);
-
+  
       if (docSnap.exists()) {
         console.log("User exists, logging in...");
+        
+        // Store phone number in AsyncStorage on successful login
+        if (loginMethod === "phone") {
+          await AsyncStorage.setItem('userPhone', identifier);
+        }
+  
         navigation.navigate("Appointment", { [loginMethod]: identifier });
       } else {
         console.log("User does not exist, registering...");
@@ -62,12 +68,12 @@ const Login = () => {
           status: "inActive",
           createdAt: new Date().toISOString(),
         });
-        
-        // Store phone number in AsyncStorage
+  
+        // Store phone number in AsyncStorage after registration
         if (loginMethod === "phone") {
           await AsyncStorage.setItem('userPhone', identifier);
         }
-
+  
         Alert.alert("Registration Successful", "Welcome!");
         navigation.navigate("OtpScreen", { [loginMethod]: identifier }); // Navigate to OTP page
       }
@@ -76,6 +82,7 @@ const Login = () => {
       Alert.alert("Error", error.message || "An error occurred during login.");
     }
   };
+  
 
   if (loading) {
     return (
