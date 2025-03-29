@@ -4,7 +4,6 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import PhoneInput from 'react-native-phone-input';
-import Icon from 'react-native-vector-icons/Ionicons'; 
 import db from '../config/firestoreConfig'; 
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -15,7 +14,7 @@ const Login = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");   
   const [loading, setLoading] = useState(true);
-  const phoneInputRef = useRef(null); // Create a ref for PhoneInput
+  const phoneInputRef = useRef(null);
 
   useEffect(() => {
     const checkStoredPhone = async () => {
@@ -50,18 +49,18 @@ const Login = () => {
         if (userData.status !== "active") { // Check user status
           const otp = generateOTP(); // Generate OTP
           await setDoc(userDocRef, { ...userData, otp }, { merge: true }); // Store OTP in Firestore
-  
+
           Alert.alert("Inactive User", "You are not active. Please verify your account.");
           navigation.navigate("OtpScreen", { otp, [loginMethod]: identifier }); // Navigate to OTP screen
           return;
         }
-  
+
         console.log("User exists and is active, logging in...");
-  
+
         if (loginMethod === "phone") {
           await AsyncStorage.setItem('userPhone', identifier);
         }
-  
+
         navigation.navigate("Appointment", { [loginMethod]: identifier });
       } else {
         console.log("User does not exist, registering...");
@@ -76,11 +75,11 @@ const Login = () => {
           createdAt: new Date().toISOString(),
           otp, // Save OTP in Firestore
         });
-  
+
         if (loginMethod === "phone") {
           await AsyncStorage.setItem('userPhone', identifier);
         }
-  
+
         Alert.alert("Registration Successful", "Welcome!");
         navigation.navigate("OtpScreen", { otp, [loginMethod]: identifier }); // Pass OTP to OTP screen
       }
@@ -90,8 +89,6 @@ const Login = () => {
     }
   };
   
-  // Function to generate a random 6-digit OTP
- 
   // Function to generate a random 6-digit OTP
   const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString(); // Generates a 6-digit OTP
@@ -124,16 +121,13 @@ const Login = () => {
       {/* Phone Number Input */}
       {loginMethod === "phone" && (
         <View style={styles.phoneInputContainer}>
-          
           <PhoneInput
-            ref={phoneInputRef} // Use useRef() here
-            initialCountry="et" // Set initial country to Ethiopia
+            ref={phoneInputRef}
+            initialCountry="et"
             onChangePhoneNumber={setPhoneNumber}
             style={styles.input}
             textStyle={styles.phoneInputText}
-            
           />
-          
         </View>
       )}
 
