@@ -32,7 +32,10 @@ const App = () => {
           />
           <Stack.Screen name="MainContent" component={MainContent} options={{ title: 'Main Content' }} />
           <Stack.Screen name="PatientRegistration" component={PatientRegistration} />
-          <Stack.Screen name="Appointment" component={Appointment} />
+          <Stack.Screen name="Appointment" component={Appointment}   options={{
+              headerLeft: null, // Disable the back button
+
+             }} />
           <Stack.Screen name="Hospitals" component={Hospitals} />
           <Stack.Screen name="About" component={About} />
           <Stack.Screen name="Profile" component={Profile} />

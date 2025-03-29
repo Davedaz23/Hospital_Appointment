@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { 
-  View, Text, TextInput, StyleSheet, Alert, TouchableOpacity 
+  View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, Image 
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import db from '../config/firestoreConfig'; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const OtpScreen = () => {
   const navigation = useNavigation();
@@ -12,29 +13,31 @@ const OtpScreen = () => {
   const { identifier } = route.params; // Get the identifier (phone or email)
   const [otp, setOtp] = useState("");
   const [fetchedOtp, setFetchedOtp] = useState("");
+  const [userData, setUserData] = useState(null);
 
   useEffect(() => {
-    const fetchOtp = async () => {
+    const fetchUserData = async () => {
       try {
         const userDocRef = doc(db, 'users', identifier);
         const docSnap = await getDoc(userDocRef);
 
         if (docSnap.exists()) {
-          const userData = docSnap.data();
-          setFetchedOtp(userData.otp); // Set the fetched OTP
+          const data = docSnap.data();
+          setFetchedOtp(data.otp); // Set the fetched OTP
+          setUserData(data); // Set the fetched user data
         } else {
           Alert.alert("Error", "User not found.");
         }
       } catch (error) {
-        console.error("Error fetching OTP:", error);
-        Alert.alert("Error", "Failed to fetch OTP.");
+        console.error("Error fetching user data:", error);
+        Alert.alert("Error", "Failed to fetch user data.");
       }
     };
 
-    fetchOtp();
+    fetchUserData();
   }, [identifier]);
 
-  const handleVerifyOtp = () => {
+  const handleVerifyOtp = async () => {
     if (!otp) {
       Alert.alert("Error", "Please enter the OTP.");
       return;
@@ -42,6 +45,14 @@ const OtpScreen = () => {
 
     if (otp === fetchedOtp) {
       console.log("OTP verified successfully.");
+      
+      // Store the phone number in AsyncStorage
+      await AsyncStorage.setItem('userPhone', identifier);
+
+      // Update user status to active in Firestore
+      const userDocRef = doc(db, 'users', identifier);
+      await updateDoc(userDocRef, { status: "active" });
+
       navigation.navigate("Appointment", { identifier });
     } else {
       Alert.alert("Error", "Invalid OTP. Please try again.");
@@ -50,9 +61,13 @@ const OtpScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Enter OTP</Text>
-      <Text style={styles.subTitle}>A verification code has been sent to {identifier}</Text>
-
+      {userData && (
+        <>
+          <Image source={{ uri: userData.profilePicture }} style={styles.profilePicture} />
+          <Text style={styles.title}>Welcome, {userData.name}</Text>
+          <Text style={styles.subTitle}>A verification code has been sent to {userData.email || userData.phone}</Text>
+        </>
+      )}
       <TextInput
         style={styles.input}
         placeholder="Enter OTP"
@@ -80,10 +95,17 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#fff",
   },
+  profilePicture: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    alignSelf: "center",
+    marginBottom: 20,
+  },
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
+    marginBottom: 10,
     textAlign: "center",
   },
   subTitle: {

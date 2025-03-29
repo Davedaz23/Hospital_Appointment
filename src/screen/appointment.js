@@ -214,7 +214,7 @@ const Appointment = () => {
         {userProfile && (
           <View style={styles.profileSection}>
             <Text style={styles.profileTitle}>{t.userProfileTitle}</Text>
-            <Text style={styles.profileText}>{t.name}: {userProfile.fullName || "N/A"}</Text>
+            <Text style={styles.profileText}>{t.name}: {userProfile.name || "N/A"}</Text>
             <Text style={styles.profileText}>{t.email}: {userProfile.email || "N/A"}</Text>
             <Text style={styles.profileText}>{t.phone}: {formData.phoneNumber}</Text>
           </View>

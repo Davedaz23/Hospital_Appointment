@@ -3,9 +3,10 @@ import { View, Text, ScrollView, StyleSheet, Alert, RefreshControl, TouchableOpa
 import { useNavigation } from "@react-navigation/native";
 import PropTypes from "prop-types";
 import FooterMenu from "./FooterMenu";
-import { collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { collection, query, where, getDocs, getDoc, deleteDoc, doc, setDoc } from "firebase/firestore";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import db from '../config/firestoreConfig'; // Firestore configuration
+import AppointmentEditModal from "../components/appointmentEditModal"; // Import the EditModal component
 
 const isValidPhoneNumber = (phoneNumber) => {
   const phoneRegex = /^\+?[0-9]{10,15}$/;
@@ -17,6 +18,8 @@ const AppointmentList = () => {
   const [phoneNumber, setPhoneNumber] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState("today"); // default filter
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -37,6 +40,19 @@ const AppointmentList = () => {
     fetchPhoneNumber();
   }, []);
 
+  const fetchHospitalName = async (hospitalID) => {
+    try {
+      const hospitalRef = doc(db, 'hospitals', hospitalID); // Create a DocumentReference for the hospital
+      const hospitalDoc = await getDoc(hospitalRef); // Use getDoc to fetch the document
+  
+      // Check if the document exists
+      return hospitalDoc.exists() ? hospitalDoc.data().name : "Unknown Hospital"; // Return hospital name or default message
+    } catch (error) {
+      console.error("Error fetching hospital name:", error);
+      return "Unknown Hospital"; // Default return on error
+    }
+  };
+
   const fetchAppointments = async () => {
     if (!phoneNumber) return;
 
@@ -51,9 +67,14 @@ const AppointmentList = () => {
       const querySnapshot = await getDocs(q);
 
       if (!querySnapshot.empty) {
-        const appointmentsList = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
+        const appointmentsList = await Promise.all(querySnapshot.docs.map(async (doc) => {
+          const appointmentData = doc.data();
+          const hospitalName = await fetchHospitalName(appointmentData.hospitalID);
+          return {
+            id: doc.id,
+            ...appointmentData,
+            hospitalName, // Add hospital name to the appointment
+          };
         }));
         setAppointments(appointmentsList);
       } else {
@@ -76,18 +97,45 @@ const AppointmentList = () => {
   };
 
   const handleDelete = async (id) => {
-    try {
-      await deleteDoc(doc(db, "appointments", id));
-      Alert.alert("Success", "Appointment deleted successfully.");
-      fetchAppointments();
-    } catch (error) {
-      console.error("Error deleting appointment:", error);
-      Alert.alert("Error", "Failed to delete appointment.");
-    }
+    Alert.alert(
+      "Delete Appointment",
+      "Are you sure you want to delete this appointment?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel"
+        },
+        {
+          text: "OK",
+          onPress: async () => {
+            try {
+              await deleteDoc(doc(db, "appointments", id));
+              Alert.alert("Success", "Appointment deleted successfully.");
+              fetchAppointments();
+            } catch (error) {
+              console.error("Error deleting appointment:", error);
+              Alert.alert("Error", "Failed to delete appointment.");
+            }
+          }
+        }
+      ]
+    );
   };
 
   const handleEdit = (appointment) => {
-    navigation.navigate('EditAppointment', { appointment });
+    setSelectedAppointment(appointment);
+    setModalVisible(true);
+  };
+
+  const handleSave = async (updatedAppointment) => {
+    try {
+      await setDoc(doc(db, "appointments", updatedAppointment.id), updatedAppointment);
+      Alert.alert("Success", "Appointment updated successfully.");
+      fetchAppointments(); // Refresh the appointments list
+    } catch (error) {
+      console.error("Error updating appointment:", error);
+      Alert.alert("Error", "Failed to update appointment.");
+    }
   };
 
   // ⬇️ Filter logic
@@ -95,9 +143,9 @@ const AppointmentList = () => {
     const appDate = new Date(appointment.app_date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    if (filter === "previous") return appDate < today;
+    if (filter === "previous") return appDate.setHours(0,0,0,0) < today;
     if (filter === "today") return appDate.toDateString() === today.toDateString();
-    if (filter === "upcoming") return appDate > today;
+    if (filter === "upcoming") return appDate.setHours(0,0,0,0) > today;
     return true;
   });
 
@@ -132,7 +180,8 @@ const AppointmentList = () => {
 
         {/* Table Header */}
         <View style={styles.tableHeader}>
-          <Text style={[styles.cell, { flex: 2 }]}>Name</Text>
+          <Text style={[styles.cell, { flex: 2 }]}>Full Name</Text>
+          <Text style={[styles.cell, { flex: 1 }]}>Hospital</Text>
           <Text style={styles.cell}>Date</Text>
           <Text style={styles.cell}>Actions</Text>
         </View>
@@ -142,6 +191,7 @@ const AppointmentList = () => {
           filteredAppointments.map((appointment) => (
             <View key={appointment.id} style={styles.tableRow}>
               <Text style={[styles.cell, { flex: 2 }]}>{appointment.fullName}</Text>
+              <Text style={[styles.cell, { flex: 1 }]}>{appointment.hospitalName}</Text>
               <Text style={styles.cell}>{new Date(appointment.app_date).toLocaleDateString()}</Text>
               <View style={[styles.cell, styles.actionCell]}>
                 <TouchableOpacity onPress={() => handleEdit(appointment)} style={styles.actionButton}>
@@ -157,6 +207,16 @@ const AppointmentList = () => {
           <Text style={styles.noDataText}>No appointments found.</Text>
         )}
       </ScrollView>
+
+      {/* Edit Modal */}
+      {selectedAppointment && (
+        <AppointmentEditModal
+          visible={modalVisible}
+          appointment={selectedAppointment}
+          onClose={() => setModalVisible(false)}
+          onSave={handleSave}
+        />
+      )}
 
       <FooterMenu />
     </View>
@@ -177,16 +237,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginHorizontal: 20,
     marginBottom: 10,
-},
-filterButton: {
+  },
+  filterButton: {
     flex: 1, // <-- this will make all buttons take equal space
     paddingVertical: 8,
     marginHorizontal: 5,
     backgroundColor: "#ccc",
     borderRadius: 5,
     alignItems: "center", // to center the text
-},
-
+  },
   activeFilter: {
     backgroundColor: "#2196F3",
   },

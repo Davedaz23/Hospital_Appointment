@@ -23,17 +23,10 @@ const FooterMenu = () => {
             <Ionicons name="medkit" size={24} color="black" />
             <Text style={styles.navText}>Hospitals</Text>
           </TouchableOpacity>
-          {/* <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('About')}>
-            <Ionicons name="information-circle" size={24} color="black" />
-            <Text style={styles.navText}>About</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Contact')}>
-            <Ionicons name="call" size={24} color="black" />
-            <Text style={styles.navText}>Contact</Text>
-          </TouchableOpacity> */}
+      
           <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('AppointmentList')}>
             <Ionicons name="call" size={24} color="black" />
-            <Text style={styles.navText}>Login</Text>
+            <Text style={styles.navText}>AppointmentList</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PatientRegistration')}>
             <Ionicons name="person-add" size={24} color="black" />

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { 
   View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, ImageBackground, ActivityIndicator, Image 
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import PhoneInput from 'react-native-phone-input';
 import db from '../config/firestoreConfig'; 
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -16,17 +16,31 @@ const Login = () => {
   const [loading, setLoading] = useState(true);
   const phoneInputRef = useRef(null);
 
-  useEffect(() => {
-    const checkStoredPhone = async () => {
-      const storedPhone = await AsyncStorage.getItem('userPhone');
-      if (storedPhone) {
-        navigation.navigate("Appointment", { phone: storedPhone });
-      } else {
-        setLoading(false);
-      }
-    };
-    checkStoredPhone();
-  }, [navigation]);
+  // Check stored phone number when the component is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      const checkStoredPhone = async () => {
+        const storedPhone = await AsyncStorage.getItem('userPhone');
+        if (storedPhone) {
+          // Check if the phone number is active
+          const userDocRef = doc(db, 'users', storedPhone);
+          const docSnap = await getDoc(userDocRef);
+
+          if (docSnap.exists()) {
+            const userData = docSnap.data();
+            if (userData.status === "active") {
+              // Navigate to Appointment if user is active
+              navigation.navigate("Appointment", { phone: storedPhone });
+              return;
+            }
+          }
+        }
+        setLoading(false); // End loading if user not found or inactive
+      };
+
+      checkStoredPhone();
+    }, [navigation])
+  );
 
   const handleLogin = async () => {
     if (loginMethod === "phone" && !phoneNumber) {
@@ -45,22 +59,22 @@ const Login = () => {
   
       if (docSnap.exists()) {
         const userData = docSnap.data();
-        
+  
         if (userData.status !== "active") { // Check user status
           const otp = generateOTP(); // Generate OTP
           await setDoc(userDocRef, { ...userData, otp }, { merge: true }); // Store OTP in Firestore
-
+  
           Alert.alert("Inactive User", "You are not active. Please verify your account.");
-          navigation.navigate("OtpScreen", { otp, [loginMethod]: identifier }); // Navigate to OTP screen
+          navigation.navigate("OtpScreen", { identifier, otp }); // Navigate to OTP screen
           return;
         }
-
+  
         console.log("User exists and is active, logging in...");
-
+  
         if (loginMethod === "phone") {
           await AsyncStorage.setItem('userPhone', identifier);
         }
-
+  
         navigation.navigate("Appointment", { [loginMethod]: identifier });
       } else {
         console.log("User does not exist, registering...");
@@ -70,24 +84,25 @@ const Login = () => {
           email: loginMethod === "email" ? identifier : null,
           name: null,
           profilePicture: null,
-          role: "doctor",
+          role: "customer", // Set default role to "customer"
           status: "inActive",
           createdAt: new Date().toISOString(),
           otp, // Save OTP in Firestore
         });
-
+  
         if (loginMethod === "phone") {
           await AsyncStorage.setItem('userPhone', identifier);
         }
-
+  
         Alert.alert("Registration Successful", "Welcome!");
-        navigation.navigate("OtpScreen", { otp, [loginMethod]: identifier }); // Pass OTP to OTP screen
+        navigation.navigate("OtpScreen", { identifier, otp }); // Pass OTP to OTP screen
       }
     } catch (error) {
       console.error("Login Error:", error);
       Alert.alert("Error", error.message || "An error occurred during login.");
     }
   };
+  
   
   // Function to generate a random 6-digit OTP
   const generateOTP = () => {
