@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Switch, TouchableOpacity, StyleSheet, Image, TextInput, Modal, Pressable, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  Switch,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  TextInput,
+  Modal,
+  Pressable,
+  Alert,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import FooterMenu from './FooterMenu';
 import LogoutButton from './LogoutButton';
 import { getFirestore, doc, getDoc, updateDoc } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
 import app from '../config/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { launchImageLibraryAsync, MediaTypeOptions } from 'expo-image-picker';
@@ -12,19 +22,15 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 // Initialize Firestore and Storage
 const db = getFirestore(app);
-const storage = getStorage(app);
 
-const Profile = ({ navigation }) => {
+const Profile = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
-
-  // Profile Data State
-  const [name, setName] = useState(null);
-  const [email, setEmail] = useState(null);
-  const [phone, setPhone] = useState(null);
-  const [profilePicture, setProfilePicture] = useState(null);
-  const [status, setStatus] = useState("inActive");
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [profilePicture, setProfilePicture] = useState('');
 
   useEffect(() => {
     const loadPhoneNumber = async () => {
@@ -32,26 +38,22 @@ const Profile = ({ navigation }) => {
         const storedPhone = await AsyncStorage.getItem('userPhone');
         if (storedPhone) {
           setPhone(storedPhone);
-
-          // Fetch user profile from Firestore using the phone number
           const userRef = doc(db, 'users', storedPhone);
           const userSnapshot = await getDoc(userRef);
 
           if (userSnapshot.exists()) {
             const userData = userSnapshot.data();
-            setName(userData.name);
-            setEmail(userData.email);
-            setProfilePicture(userData.profilePicture);
-            setStatus(userData.status);
+            setName(userData.name || '');
+            setEmail(userData.email || '');
+            setProfilePicture(userData.profilePicture || '');
           } else {
-            Alert.alert("No such document!");
+            Alert.alert("Error", "No such document!");
           }
         }
       } catch (error) {
-        Alert.alert("Error loading phone number:", error);
+        Alert.alert("Error", "Error loading phone number: " + error.message);
       }
     };
-
     loadPhoneNumber();
   }, []);
 
@@ -59,80 +61,49 @@ const Profile = ({ navigation }) => {
   const toggleNotifications = () => setNotificationsEnabled(prev => !prev);
 
   const saveProfile = async () => {
-    const userPhone = phone; // Assume phone number is the unique identifier
-
-    // Validate the form values before saving
     if (!name || !email || !phone) {
       Alert.alert("Error", "Please fill in all fields.");
       return;
     }
 
-    if (userPhone) {
-      const userRef = doc(db, 'users', userPhone); // Use phone number as doc ID
-
-      try {
-        await updateDoc(userRef, {
-          name,
-          email,
-          phone,
-          profilePicture,
-          status,
-        });
-
-        Alert.alert("Profile updated successfully!");
-        setModalVisible(false);
-      } catch (error) {
-        Alert.alert("Error updating profile: ", error.message);
-      }
+    const userRef = doc(db, 'users', phone);
+    try {
+      await updateDoc(userRef, { name, email, profilePicture, phone });
+      Alert.alert("Success", "Profile updated successfully!");
+      setModalVisible(false);
+    } catch (error) {
+      Alert.alert("Error", "Error updating profile: " + error.message);
     }
   };
 
   const pickImage = async () => {
-    let result = await launchImageLibraryAsync({
+    const result = await launchImageLibraryAsync({
       mediaTypes: MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 1,
     });
-
+  
     if (!result.canceled) {
       const selectedImage = result.assets[0].uri;
-
-      // Immediately update the profile picture in the UI
       setProfilePicture(selectedImage);
-
-      // Prepare for upload
-      const response = await fetch(selectedImage);
-      const blob = await response.blob(); // Convert image to blob for upload
-
-      const imageRef = ref(storage, `profile_pictures/${phone}.jpg`);
-
+      
+      // Update the profile picture in Firestore
+      const userRef = doc(db, 'users', phone);
       try {
-        await uploadBytes(imageRef, blob); // Upload the image
-        const downloadURL = await getDownloadURL(imageRef); // Get the download URL
-
-        // Update Firestore with the new profile picture URL
-        const userRef = doc(db, 'users', phone);
-        await updateDoc(userRef, { profilePicture: downloadURL });
-
-        // Update state with the new download URL
-        setProfilePicture(downloadURL);
-        Alert.alert("Profile picture uploaded successfully!");
+        await updateDoc(userRef, { profilePicture: selectedImage }); // Use the selected image URI
+  
+        Alert.alert("Success", "Profile picture uploaded successfully!");
+      
       } catch (error) {
-        Alert.alert("Error uploading image: ", error.message);
+        Alert.alert("Error", "Error updating profile picture: " + error.message);
       }
     }
   };
 
   return (
     <View style={[styles.container, isDarkMode && styles.darkContainer]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color={isDarkMode ? '#fff' : '#000'} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, isDarkMode && styles.darkText]}>Profile</Text>
-      </View>
+   
 
       {/* Profile Section */}
       <View style={styles.profileSection}>
@@ -200,21 +171,21 @@ const Profile = ({ navigation }) => {
             <TextInput
               placeholder="Name"
               placeholderTextColor="#999"
-              value={name || ''}
+              value={name}
               onChangeText={setName}
               style={[styles.input, isDarkMode && styles.darkInput]}
             />
             <TextInput
               placeholder="Email"
               placeholderTextColor="#999"
-              value={email || ''}
+              value={email}
               onChangeText={setEmail}
               style={[styles.input, isDarkMode && styles.darkInput]}
             />
             <TextInput
               placeholder="Phone"
               placeholderTextColor="#999"
-              value={phone || ''}
+              value={phone}
               onChangeText={setPhone}
               style={[styles.input, isDarkMode && styles.darkInput]}
             />
@@ -256,7 +227,6 @@ const styles = StyleSheet.create({
   darkText: {
     color: '#fff',
   },
-
   profileSection: {
     alignItems: 'center',
     marginBottom: 30,
@@ -301,7 +271,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginLeft: 5,
   },
-
   settingsContainer: {
     marginTop: 10,
   },
@@ -321,7 +290,6 @@ const styles = StyleSheet.create({
   settingText: {
     fontSize: 16,
   },
-
   modalOverlay: {
     flex: 1,
     justifyContent: 'center',
@@ -372,6 +340,5 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
 });
-
 
 export default Profile;

@@ -1,25 +1,46 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   View, Text, TextInput, StyleSheet, Alert, TouchableOpacity 
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { doc, getDoc } from "firebase/firestore";
+import db from '../config/firestoreConfig'; 
 
 const OtpScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { identifier } = route.params; // Get the identifier (phone or email)
   const [otp, setOtp] = useState("");
+  const [fetchedOtp, setFetchedOtp] = useState("");
 
-  const handleVerifyOtp = async () => {
+  useEffect(() => {
+    const fetchOtp = async () => {
+      try {
+        const userDocRef = doc(db, 'users', identifier);
+        const docSnap = await getDoc(userDocRef);
+
+        if (docSnap.exists()) {
+          const userData = docSnap.data();
+          setFetchedOtp(userData.otp); // Set the fetched OTP
+        } else {
+          Alert.alert("Error", "User not found.");
+        }
+      } catch (error) {
+        console.error("Error fetching OTP:", error);
+        Alert.alert("Error", "Failed to fetch OTP.");
+      }
+    };
+
+    fetchOtp();
+  }, [identifier]);
+
+  const handleVerifyOtp = () => {
     if (!otp) {
       Alert.alert("Error", "Please enter the OTP.");
       return;
     }
 
-    // Simulated OTP verification (replace with your actual logic)
-    const isValidOtp = otp === "123456"; // Example: static OTP for testing
-
-    if (isValidOtp) {
+    if (otp === fetchedOtp) {
       console.log("OTP verified successfully.");
       navigation.navigate("Appointment", { identifier });
     } else {
@@ -57,7 +78,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: 20,
-    backgroundColor: "#fff", // Solid background color
+    backgroundColor: "#fff",
   },
   title: {
     fontSize: 24,
@@ -79,7 +100,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   verifyButton: {
-    backgroundColor: "#000", // Custom Button Color
+    backgroundColor: "#000",
     padding: 12,
     borderRadius: 5,
     alignItems: "center",

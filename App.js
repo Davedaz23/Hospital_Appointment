@@ -19,13 +19,16 @@ const Stack = createStackNavigator();
 
 const App = () => {
   return (
-    <AuthProvider> {/* Wrap everything inside AuthProvider */}
+    <AuthProvider> 
       <NavigationContainer>
         <Stack.Navigator initialRouteName="Login">
           <Stack.Screen
             name="Login"
             component={Login}
-            options={{ title: 'Care4You' }}
+            options={{ title: 'Care4You',
+              headerLeft: null, // Disable the back button
+
+             }}
           />
           <Stack.Screen name="MainContent" component={MainContent} options={{ title: 'Main Content' }} />
           <Stack.Screen name="PatientRegistration" component={PatientRegistration} />

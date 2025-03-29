@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, ImageBackground, ActivityIndicator, Image 
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import CountryPicker from "react-native-country-picker-modal";
+import PhoneInput from 'react-native-phone-input';
 import Icon from 'react-native-vector-icons/Ionicons'; 
 import db from '../config/firestoreConfig'; 
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -14,17 +14,16 @@ const Login = () => {
   const [loginMethod, setLoginMethod] = useState("phone");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");   
-  const [countryCode, setCountryCode] = useState("+251"); 
-  const [country, setCountry] = useState({});
-  const [loading, setLoading] = useState(true); // Loading state
-     
+  const [loading, setLoading] = useState(true);
+  const phoneInputRef = useRef(null); // Create a ref for PhoneInput
+
   useEffect(() => {
     const checkStoredPhone = async () => {
       const storedPhone = await AsyncStorage.getItem('userPhone');
       if (storedPhone) {
         navigation.navigate("Appointment", { phone: storedPhone });
       } else {
-        setLoading(false); // Stop loading if no phone is found
+        setLoading(false);
       }
     };
     checkStoredPhone();
@@ -41,17 +40,24 @@ const Login = () => {
     }
   
     try {
-      const identifier = loginMethod === "phone" 
-        ? `${countryCode}${phoneNumber}` 
-        : email;
-  
+      const identifier = loginMethod === "phone" ? phoneNumber : email;
       const userDocRef = doc(db, 'users', identifier);
       const docSnap = await getDoc(userDocRef);
   
       if (docSnap.exists()) {
-        console.log("User exists, logging in...");
+        const userData = docSnap.data();
         
-        // Store phone number in AsyncStorage on successful login
+        if (userData.status !== "active") { // Check user status
+          const otp = generateOTP(); // Generate OTP
+          await setDoc(userDocRef, { ...userData, otp }, { merge: true }); // Store OTP in Firestore
+  
+          Alert.alert("Inactive User", "You are not active. Please verify your account.");
+          navigation.navigate("OtpScreen", { otp, [loginMethod]: identifier }); // Navigate to OTP screen
+          return;
+        }
+  
+        console.log("User exists and is active, logging in...");
+  
         if (loginMethod === "phone") {
           await AsyncStorage.setItem('userPhone', identifier);
         }
@@ -59,6 +65,7 @@ const Login = () => {
         navigation.navigate("Appointment", { [loginMethod]: identifier });
       } else {
         console.log("User does not exist, registering...");
+        const otp = generateOTP(); // Generate OTP for new user
         await setDoc(userDocRef, {
           phone: loginMethod === "phone" ? identifier : null,
           email: loginMethod === "email" ? identifier : null,
@@ -67,15 +74,15 @@ const Login = () => {
           role: "doctor",
           status: "inActive",
           createdAt: new Date().toISOString(),
+          otp, // Save OTP in Firestore
         });
   
-        // Store phone number in AsyncStorage after registration
         if (loginMethod === "phone") {
           await AsyncStorage.setItem('userPhone', identifier);
         }
   
         Alert.alert("Registration Successful", "Welcome!");
-        navigation.navigate("OtpScreen", { [loginMethod]: identifier }); // Navigate to OTP page
+        navigation.navigate("OtpScreen", { otp, [loginMethod]: identifier }); // Pass OTP to OTP screen
       }
     } catch (error) {
       console.error("Login Error:", error);
@@ -83,6 +90,12 @@ const Login = () => {
     }
   };
   
+  // Function to generate a random 6-digit OTP
+ 
+  // Function to generate a random 6-digit OTP
+  const generateOTP = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString(); // Generates a 6-digit OTP
+  };
 
   if (loading) {
     return (
@@ -111,32 +124,16 @@ const Login = () => {
       {/* Phone Number Input */}
       {loginMethod === "phone" && (
         <View style={styles.phoneInputContainer}>
-          <CountryPicker
-            countryCode={country.cca2 || "ET"}
-            withFlag
-            withCallingCode
-            withFilter
-            onSelect={(selectedCountry) => {
-              setCountry(selectedCountry);
-              setCountryCode(`+${selectedCountry.callingCode[0]}`);
-              setPhoneNumber(""); 
-            }}
-            containerStyle={styles.countryPicker}
-          />
-          <TouchableOpacity style={styles.chevronContainer}>
-            <Icon name="chevron-down" size={20} color="#000" />
-          </TouchableOpacity>
           
-          <View style={styles.phoneInputWrapper}>
-            <Text style={styles.countryCode}>{countryCode}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your phone number"
-              value={phoneNumber}
-              onChangeText={setPhoneNumber}
-              keyboardType="phone-pad"
-            />
-          </View>
+          <PhoneInput
+            ref={phoneInputRef} // Use useRef() here
+            initialCountry="et" // Set initial country to Ethiopia
+            onChangePhoneNumber={setPhoneNumber}
+            style={styles.input}
+            textStyle={styles.phoneInputText}
+            
+          />
+          
         </View>
       )}
 
@@ -190,7 +187,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fff", // Background color while loading
+    backgroundColor: "#fff",
   },
   logo: {
     width: 100,
@@ -213,41 +210,24 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   phoneInputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
     marginBottom: 20,
   },
-  chevronContainer: {
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-  },
-  phoneInputWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
+  input: {
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
-    paddingLeft: 10,
-    flex: 1,
-  },
-  countryCode: {
+    padding: 10,
     fontSize: 16,
-    fontWeight: "bold",
-    marginRight: 5,
-    color: "#000",
+  },
+  phoneInputText: {
+    fontSize: 16,
   },
   label: {
     marginVertical: 10,
     fontSize: 16,
   },
-  input: {
-    flex: 1,
-    paddingVertical: 10,
-    fontSize: 16,
-  },
   continueButton: {
-    backgroundColor: "#000", // Custom Button Color
+    backgroundColor: "#000",
     padding: 12,
     borderRadius: 5,
     alignItems: "center",
