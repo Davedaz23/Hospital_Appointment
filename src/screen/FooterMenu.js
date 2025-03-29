@@ -31,7 +31,7 @@ const FooterMenu = () => {
             <Ionicons name="call" size={24} color="black" />
             <Text style={styles.navText}>Contact</Text>
           </TouchableOpacity> */}
-          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Login')}>
+          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('AppointmentList')}>
             <Ionicons name="call" size={24} color="black" />
             <Text style={styles.navText}>Login</Text>
           </TouchableOpacity>
