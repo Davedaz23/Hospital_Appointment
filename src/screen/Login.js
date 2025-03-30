@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { 
-  View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, ImageBackground, ActivityIndicator, Image 
+  View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, 
+  ImageBackground, ActivityIndicator, Image 
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import PhoneInput from 'react-native-phone-input';
 import db from '../config/firestoreConfig'; 
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
 
 const Login = () => {
   const navigation = useNavigation();
@@ -15,6 +17,28 @@ const Login = () => {
   const [email, setEmail] = useState("");   
   const [loading, setLoading] = useState(true);
   const phoneInputRef = useRef(null);
+  const [language, setLanguage] = useState("English");
+  const [isLanguageDropdownVisible, setIsLanguageDropdownVisible] = useState(false);
+
+  // Translation object
+  const translations = {
+    English: {
+      login: "Login",
+      continue: "Continue",
+      continueWithEmail: "Continue with email",
+      continueWithPhone: "Continue with phone",
+      terms: "Terms and conditions",
+      selectLanguage: "English"
+    },
+    Amharic: {
+      login: "ግባ",
+      continue: "ቀጥል",
+      continueWithEmail: "በኢሜይል ይቀጥሉ",
+      continueWithPhone: "በስልክ ቁጥር ይቀጥሉ",
+      terms: "ውሎች እና ሁኔታዎች",
+      selectLanguage: "አማርኛ"
+    }
+  };
 
   // Check stored phone number when the component is focused
   useFocusEffect(
@@ -103,10 +127,18 @@ const Login = () => {
     }
   };
   
-  
   // Function to generate a random 6-digit OTP
   const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString(); // Generates a 6-digit OTP
+  };
+
+  const toggleLanguageDropdown = () => {
+    setIsLanguageDropdownVisible(!isLanguageDropdownVisible);
+  };
+
+  const changeLanguage = (lang) => {
+    setLanguage(lang);
+    setIsLanguageDropdownVisible(false);
   };
 
   if (loading) {
@@ -122,16 +154,44 @@ const Login = () => {
       source={require('../assets/background.png')} 
       style={styles.container}
     >
+      {/* Language Dropdown */}
+      <View style={styles.languageDropdownContainer}>
+        <TouchableOpacity 
+          onPress={toggleLanguageDropdown} 
+          style={styles.languageButton}
+        >
+          <Text style={styles.languageButtonText}>{translations[language].selectLanguage}</Text>
+          <Ionicons 
+            name={isLanguageDropdownVisible ? "chevron-up" : "chevron-down"} 
+            size={16} 
+            color="black" 
+          />
+        </TouchableOpacity>
+
+        {isLanguageDropdownVisible && (
+          <View style={styles.languageDropdownMenu}>
+            <TouchableOpacity 
+              onPress={() => changeLanguage("English")} 
+              style={styles.languageOption}
+            >
+              <Text style={styles.languageOptionText}>English</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => changeLanguage("Amharic")} 
+              style={styles.languageOption}
+            >
+              <Text style={styles.languageOptionText}>አማርኛ</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+
       <Image 
         source={require('../assets/logo.png')} 
         style={styles.logo}
       />
       
-      <Text style={styles.title}>Login</Text>
-
-      <View style={styles.languageContainer}>
-        <Text style={styles.languageText}>English</Text>
-      </View>
+      <Text style={styles.title}>{translations[language].login}</Text>
 
       {/* Phone Number Input */}
       {loginMethod === "phone" && (
@@ -162,7 +222,7 @@ const Login = () => {
 
       {/* Custom Button */}
       <TouchableOpacity style={styles.continueButton} onPress={handleLogin}>
-        <Text style={styles.continueButtonText}>Continue</Text>
+        <Text style={styles.continueButtonText}>{translations[language].continue}</Text>
       </TouchableOpacity>
 
       {/* "or" with horizontal lines */}
@@ -177,11 +237,13 @@ const Login = () => {
         style={styles.emailButton}
       >
         <Text style={styles.emailButtonText}>
-          {loginMethod === "phone" ? "Continue with email" : "Continue with phone"}
+          {loginMethod === "phone" 
+            ? translations[language].continueWithEmail 
+            : translations[language].continueWithPhone}
         </Text>
       </TouchableOpacity>
 
-      <Text style={styles.termsText}>Terms and conditions</Text>
+      <Text style={styles.termsText}>{translations[language].terms}</Text>
     </ImageBackground>
   );
 };
@@ -209,14 +271,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
-  },
-  languageContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  languageText: {
-    fontSize: 16,
   },
   phoneInputContainer: {
     marginBottom: 20,
@@ -254,7 +308,7 @@ const styles = StyleSheet.create({
   },
   line: {
     flex: 1,
-    height: 3,
+    height: 1,
     backgroundColor: "#000",
   },
   orText: {
@@ -277,6 +331,44 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 14,
     color: "#6c757d",
+  },
+  // New styles for language dropdown
+  languageDropdownContainer: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    zIndex: 1,
+  },
+  languageButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 5,
+  },
+  languageButtonText: {
+    marginRight: 4,
+    fontSize: 14,
+  },
+  languageDropdownMenu: {
+    position: 'absolute',
+    top: 40,
+    right: 0,
+    backgroundColor: 'white',
+    borderRadius: 5,
+    padding: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  languageOption: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  languageOptionText: {
+    fontSize: 14,
   },
 });
 

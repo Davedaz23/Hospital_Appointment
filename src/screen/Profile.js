@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
   },
   profileSection: {
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 0,
   },
   profilePicContainer: {
     position: 'relative',
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   settingsContainer: {
-    marginTop: 10,
+    marginTop: 0,
   },
   settingItem: {
     flexDirection: 'row',
@@ -338,6 +338,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#4CAF50',
     padding: 10,
     borderRadius: 5,
+  },
+  logout: {
+    marginBottom: 20,
   },
 });
 

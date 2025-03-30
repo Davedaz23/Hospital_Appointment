@@ -1,40 +1,94 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, FlatList, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import { useNavigation } from '@react-navigation/native'; // For navigation
-import { Ionicons } from '@expo/vector-icons'; // For icons
+import { View, Text, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 
 const FooterMenu = () => {
-  const [query, setQuery] = useState(''); // State to hold search query
-  const [searchVal, setSearchVal] = useState(''); // State to filter the hospital list
-  const [filteredHospitals, setFilteredHospitals] = useState([]); // State for filtered hospitals
-  const navigation = useNavigation(); // For navigating to search results page
-  const [otpSent, setOtpSent] = useState(false);
+  const navigation = useNavigation();
+  const route = useRoute(); // Get current route information
+  const [activeTab, setActiveTab] = useState(route.name); // Track active tab
+
+  // Handle tab press
+  const handleTabPress = (tabName) => {
+    setActiveTab(tabName);
+    navigation.navigate(tabName);
+  };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <View style={styles.container}>
         {/* Footer Menu */}
         <View style={styles.footerMenu}>
-          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Appointment')}>
-            <Ionicons name="calendar" size={24} color="black" />
-            <Text style={styles.navText}>Appointment</Text>
+          {/* Home Tab */}
+          <TouchableOpacity 
+            style={styles.navItem} 
+            onPress={() => handleTabPress('Appointment')}
+          >
+            <Ionicons 
+              name="home" 
+              size={24} 
+              color={activeTab === 'Appointment' ? '#0066cc' : '#666'} 
+            />
+            <Text style={[
+              styles.navText,
+              activeTab === 'Appointment' && styles.activeNavText
+            ]}>
+              Home
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Hospitals')}>
-            <Ionicons name="medkit" size={24} color="black" />
-            <Text style={styles.navText}>Hospitals</Text>
+          
+          {/* Hospitals Tab */}
+          <TouchableOpacity 
+            style={styles.navItem} 
+            onPress={() => handleTabPress('Hospitals')}
+          >
+            <Ionicons 
+              name="medkit" 
+              size={24} 
+              color={activeTab === 'Hospitals' ? '#0066cc' : '#666'} 
+            />
+            <Text style={[
+              styles.navText,
+              activeTab === 'Hospitals' && styles.activeNavText
+            ]}>
+              Hospitals
+            </Text>
           </TouchableOpacity>
-      
-          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('AppointmentList')}>
-            <Ionicons name="call" size={24} color="black" />
-            <Text style={styles.navText}>AppointmentList</Text>
+          
+          {/* My Appointments Tab */}
+          <TouchableOpacity 
+            style={styles.navItem} 
+            onPress={() => handleTabPress('AppointmentList')}
+          >
+            <Ionicons 
+              name="calendar" 
+              size={24} 
+              color={activeTab === 'AppointmentList' ? '#0066cc' : '#666'} 
+            />
+            <Text style={[
+              styles.navText,
+              activeTab === 'AppointmentList' && styles.activeNavText
+            ]}>
+              My Appointments
+            </Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PatientRegistration')}>
-            <Ionicons name="person-add" size={24} color="black" />
-            <Text style={styles.navText}>Registration</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile')}>
-            <Ionicons name="person" size={24} color="black" />
-            <Text style={styles.navText}>profile</Text>
+          
+          {/* Profile Tab */}
+          <TouchableOpacity 
+            style={styles.navItem} 
+            onPress={() => handleTabPress('Profile')}
+          >
+            <Ionicons 
+              name="person" 
+              size={24} 
+              color={activeTab === 'Profile' ? '#0066cc' : '#666'} 
+            />
+            <Text style={[
+              styles.navText,
+              activeTab === 'Profile' && styles.activeNavText
+            ]}>
+              Profile
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -46,6 +100,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
+  },
+  footerMenu: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'white',
+    borderTopWidth: 1,
+    borderTopColor: '#ccc',
+    paddingVertical: 10,
+  },
+  navItem: {
+    alignItems: 'center',
+  },
+  navText: {
+    marginTop: 5,
+    fontSize: 12,
+    color: '#666',
+  },
+  activeNavText: {
+    fontWeight: 'bold',
+    color: '#0066cc',
   },
   branding: {
     flexDirection: 'row',
@@ -64,22 +143,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginLeft: 10,
-  },
-  footerMenu: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: 'white',
-    borderTopWidth: 1,
-    borderTopColor: '#ccc',
-    paddingVertical: 10,
-  },
-  navItem: {
-    alignItems: 'center', // Center icon and text horizontally
   },
   navText: {
     marginTop: 5, // Add some space between the icon and text
