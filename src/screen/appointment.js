@@ -7,14 +7,17 @@ import {
   ScrollView,
   StyleSheet,
   Alert,
+  TouchableOpacity,
+  Image,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useNavigation } from "@react-navigation/native";
 import { Picker } from '@react-native-picker/picker';
 import FooterMenu from "./FooterMenu";
-import db from '../config/firestoreConfig'; // Import your Firestore configuration
+import db from '../config/firestoreConfig';
 import { collection, getDocs, query, where, setDoc, doc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
 
 const Appointment = () => {
   const navigation = useNavigation();
@@ -35,8 +38,9 @@ const Appointment = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [language, setLanguage] = useState("english");
+  const [isLanguageDropdownVisible, setIsLanguageDropdownVisible] = useState(false);
 
-  // Language translations
+  // Translation object
   const translations = {
     english: {
       userProfileTitle: "User Profile",
@@ -57,6 +61,9 @@ const Appointment = () => {
       description: "Description",
       enterDescription: "Enter description",
       submit: "Submit",
+      selectLanguage: "English",
+      english: "English",
+      amharic: "አማርኛ",
     },
     amharic: {
       userProfileTitle: "የተጠቃሚ መግለጫ",
@@ -77,6 +84,9 @@ const Appointment = () => {
       description: "መግለጫ",
       enterDescription: "መግለጫ ያስገቡ",
       submit: "አስገባ",
+      selectLanguage: "አማርኛ",
+      english: "English",
+      amharic: "አማርኛ",
     },
   };
 
@@ -109,9 +119,9 @@ const Appointment = () => {
 
   const fetchUserProfile = async (phone) => {
     try {
-      const cleanedPhone = phone.replace(/\D/g, '').trim(); // Clean the phone number
-      const formattedPhone = `+${cleanedPhone}`; // Prepend '+' to the cleaned phone
-  
+      const cleanedPhone = phone.replace(/\D/g, '').trim();
+      const formattedPhone = `+${cleanedPhone}`;
+
       const usersRef = collection(db, 'users');
       const userQuery = query(usersRef, where('phone', '==', formattedPhone));
       const querySnapshot = await getDocs(userQuery);
@@ -189,21 +199,45 @@ const Appointment = () => {
     }
   };
 
+  const toggleLanguageDropdown = () => {
+    setIsLanguageDropdownVisible(!isLanguageDropdownVisible);
+  };
+
+  const changeLanguage = (lang) => {
+    setLanguage(lang);
+    setIsLanguageDropdownVisible(false);
+  };
+
   const t = translations[language];
 
   return (
     <View style={styles.container}>
-      <View style={styles.languageSelectorContainer}>
-        <View style={styles.languageSelector}>
-          <Picker
-            selectedValue={language}
-            onValueChange={(itemValue) => setLanguage(itemValue)}
-            style={styles.languagePicker}
-          >
-            <Picker.Item label="English" value="english" />
-            <Picker.Item label="አማርኛ" value="amharic" />
-          </Picker>
-        </View>
+      {/* Language Dropdown Selector */}
+      <View style={styles.languageDropdownContainer}>
+        <TouchableOpacity 
+          onPress={toggleLanguageDropdown} 
+          style={styles.languageButton}
+        >
+          <Text style={styles.languageButtonText}>{t.selectLanguage}</Text>
+          <Ionicons name="chevron-down" size={12} color="black" />
+        </TouchableOpacity>
+
+        {isLanguageDropdownVisible && (
+          <View style={styles.languageDropdownMenu}>
+            <TouchableOpacity 
+              onPress={() => changeLanguage('english')} 
+              style={styles.languageOption}
+            >
+              <Text style={styles.languageOptionText}>{t.english}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => changeLanguage('amharic')} 
+              style={styles.languageOption}
+            >
+              <Text style={styles.languageOptionText}>{t.amharic}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       <ScrollView
@@ -214,6 +248,15 @@ const Appointment = () => {
         {userProfile && (
           <View style={styles.profileSection}>
             <Text style={styles.profileTitle}>{t.userProfileTitle}</Text>
+            
+            {/* Profile Picture Section */}
+            <View style={styles.profilePicContainer}>
+              <Image 
+                source={{ uri: userProfile.profilePicture || 'https://via.placeholder.com/150' }} 
+                style={styles.profilePic} 
+              />
+            </View>
+            
             <Text style={styles.profileText}>{t.name}: {userProfile.name || "N/A"}</Text>
             <Text style={styles.profileText}>{t.email}: {userProfile.email || "N/A"}</Text>
             <Text style={styles.profileText}>{t.phone}: {formData.phoneNumber}</Text>
@@ -305,27 +348,46 @@ const Appointment = () => {
   );
 };
 
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     position: "relative",
   },
-  languageSelectorContainer: {
-    position: "absolute",
-    top: 10,
-    right: 30,
+  languageDropdownContainer: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
     zIndex: 1,
   },
-  languageSelector: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    backgroundColor: "#fff",
+  languageButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 6,
   },
-  languagePicker: {
-    height: 20,
-    width: 70,
+  languageButtonText: {
+    marginRight: 4,
+    fontSize: 12,
+  },
+  languageDropdownMenu: {
+    position: 'absolute',
+    top: 32,
+    right: 0,
+    backgroundColor: 'white',
+    borderRadius: 6,
+    padding: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 5,
+  },
+  languageOption: {
+    paddingVertical: 4,
+  },
+  languageOptionText: {
+    fontSize: 12,
   },
   scrollView: {
     flex: 1,
@@ -337,21 +399,36 @@ const styles = StyleSheet.create({
     paddingBottom: 80,
   },
   profileSection: {
+    color: "rgb(247, 242, 242)",
     marginBottom: 20,
     padding: 15,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "rgb(0, 17, 255)",
     borderRadius: 10,
     borderWidth: 1,
     borderColor: "#ddd",
+    alignItems: 'center',
+  },
+  profilePicContainer: {
+    marginBottom: 15,
+  },
+  profilePic: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 2,
+    borderColor: '#2196F3',
   },
   profileTitle: {
+    color: "rgb(247, 242, 242)",
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
   },
   profileText: {
+    color: "rgb(247, 242, 242)",
     fontSize: 16,
     marginBottom: 5,
+    alignSelf: 'flex-start',
   },
   title: {
     fontSize: 24,

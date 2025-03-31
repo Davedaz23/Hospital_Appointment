@@ -2,12 +2,12 @@
 import { initializeApp } from 'firebase/app';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBWLOfCyXXVzr50FaCI8uPFx0EStcc5L-8",
-    authDomain: "trip-e9894.firebaseapp.com",
-    projectId: "trip-e9894",
-    storageBucket: "trip-e9894.appspot.com",
-    messagingSenderId: "145378113873",
-    appId: "1:145378113873:web:19be86a0ddc93695147b70",
+    apiKey: "AIzaSyD2YieupthdsqBItdMd0lFkYKlVxdzKT8I",
+    authDomain: "care4you1-62cc7.firebaseapp.com",
+    projectId: "care4you1-62cc7",
+    storageBucket: "care4you1-62cc7.firebasestorage.app",
+    messagingSenderId: "617055937715",
+    appId: "1:617055937715:android:4b08984ae563213174bcc6"
 };
 
 const app = initializeApp(firebaseConfig);
