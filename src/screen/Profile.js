@@ -31,6 +31,42 @@ const Profile = () => {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [profilePicture, setProfilePicture] = useState('');
+  const [language, setLanguage] = useState('english');
+  const [isLanguageDropdownVisible, setIsLanguageDropdownVisible] = useState(false);
+
+  // Translation object
+  const translations = {
+    english: {
+      profileTitle: "Profile",
+      darkMode: "Dark Mode",
+      notifications: "Enable Notifications",
+      helpSupport: "Help & Support",
+      privacyPolicy: "Privacy Policy",
+      termsConditions: "Terms & Conditions",
+      editProfile: "Edit Profile",
+      save: "Save",
+      cancel: "Cancel",
+      selectLanguage: "English",
+      english: "English",
+      amharic: "አማርኛ",
+    },
+    amharic: {
+      profileTitle: "መገለጫ",
+      darkMode: "ጨለማ ሞድ",
+      notifications: "ማሳወቂያዎችን አብቅት",
+      helpSupport: "እርዳታ እና ድጋፍ",
+      privacyPolicy: "የግላዊነት ፖሊሲ",
+      termsConditions: "ውሎች እና ሁኔታዎች",
+      editProfile: "መገለጫ አስተካክል",
+      save: "አስቀምጥ",
+      cancel: "ይቅር",
+      selectLanguage: "አማርኛ",
+      english: "English",
+      amharic: "አማርኛ",
+    },
+  };
+
+  const t = translations[language];
 
   useEffect(() => {
     const loadPhoneNumber = async () => {
@@ -88,22 +124,54 @@ const Profile = () => {
       const selectedImage = result.assets[0].uri;
       setProfilePicture(selectedImage);
       
-      // Update the profile picture in Firestore
       const userRef = doc(db, 'users', phone);
       try {
-        await updateDoc(userRef, { profilePicture: selectedImage }); // Use the selected image URI
-  
+        await updateDoc(userRef, { profilePicture: selectedImage });
         Alert.alert("Success", "Profile picture uploaded successfully!");
-      
       } catch (error) {
         Alert.alert("Error", "Error updating profile picture: " + error.message);
       }
     }
   };
 
+  const toggleLanguageDropdown = () => {
+    setIsLanguageDropdownVisible(!isLanguageDropdownVisible);
+  };
+
+  const changeLanguage = (lang) => {
+    setLanguage(lang);
+    setIsLanguageDropdownVisible(false);
+  };
+
   return (
     <View style={[styles.container, isDarkMode && styles.darkContainer]}>
-   
+      {/* Language Selector */}
+      <View style={styles.languageDropdownContainer}>
+        <TouchableOpacity 
+          onPress={toggleLanguageDropdown} 
+          style={styles.languageButton}
+        >
+          <Text style={styles.languageButtonText}>{t.selectLanguage}</Text>
+          <Ionicons name="chevron-down" size={12} color="white" />
+        </TouchableOpacity>
+
+        {isLanguageDropdownVisible && (
+          <View style={styles.languageDropdownMenu}>
+            <TouchableOpacity 
+              onPress={() => changeLanguage('english')} 
+              style={styles.languageOption}
+            >
+              <Text style={styles.languageOptionText}>{t.english}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              onPress={() => changeLanguage('amharic')} 
+              style={styles.languageOption}
+            >
+              <Text style={styles.languageOptionText}>{t.amharic}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
 
       {/* Profile Section */}
       <View style={styles.profileSection}>
@@ -117,18 +185,18 @@ const Profile = () => {
         {/* Edit Profile Button */}
         <TouchableOpacity style={styles.editButton} onPress={() => setModalVisible(true)}>
           <Ionicons name="create-outline" size={16} color="#fff" />
-          <Text style={styles.editButtonText}>Edit Profile</Text>
+          <Text style={styles.editButtonText}>{t.editProfile}</Text>
         </TouchableOpacity>
       </View>
 
       {/* Settings */}
       <View style={styles.settingsContainer}>
         <View style={styles.settingItem}>
-          <Text style={[styles.settingText, isDarkMode && styles.darkText]}>Dark Mode</Text>
+          <Text style={[styles.settingText, isDarkMode && styles.darkText]}>{t.darkMode}</Text>
           <Switch value={isDarkMode} onValueChange={toggleDarkMode} trackColor={{ false: '#767577', true: '#81b0ff' }} thumbColor={isDarkMode ? '#f5dd4b' : '#f4f3f4'} />
         </View>
         <View style={styles.settingItem}>
-          <Text style={[styles.settingText, isDarkMode && styles.darkText]}>Enable Notifications</Text>
+          <Text style={[styles.settingText, isDarkMode && styles.darkText]}>{t.notifications}</Text>
           <Switch value={notificationsEnabled} onValueChange={toggleNotifications} trackColor={{ false: '#767577', true: '#81b0ff' }} thumbColor={notificationsEnabled ? '#f5dd4b' : '#f4f3f4'} />
         </View>
 
@@ -136,7 +204,7 @@ const Profile = () => {
         <TouchableOpacity style={styles.settingItem} onPress={() => navigation.navigate('HelpSupport')}>
           <View style={styles.iconTextContainer}>
             <Ionicons name="help-circle-outline" size={20} color={isDarkMode ? '#fff' : '#000'} />
-            <Text style={[styles.settingText, isDarkMode && styles.darkText]}>Help & Support</Text>
+            <Text style={[styles.settingText, isDarkMode && styles.darkText]}>{t.helpSupport}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={isDarkMode ? '#fff' : '#000'} />
         </TouchableOpacity>
@@ -144,7 +212,7 @@ const Profile = () => {
         <TouchableOpacity style={styles.settingItem} onPress={() => navigation.navigate('PrivacyPolicy')}>
           <View style={styles.iconTextContainer}>
             <Ionicons name="shield-checkmark-outline" size={20} color={isDarkMode ? '#fff' : '#000'} />
-            <Text style={[styles.settingText, isDarkMode && styles.darkText]}>Privacy Policy</Text>
+            <Text style={[styles.settingText, isDarkMode && styles.darkText]}>{t.privacyPolicy}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={isDarkMode ? '#fff' : '#000'} />
         </TouchableOpacity>
@@ -152,7 +220,7 @@ const Profile = () => {
         <TouchableOpacity style={styles.settingItem} onPress={() => navigation.navigate('TermsConditions')}>
           <View style={styles.iconTextContainer}>
             <Ionicons name="document-text-outline" size={20} color={isDarkMode ? '#fff' : '#000'} />
-            <Text style={[styles.settingText, isDarkMode && styles.darkText]}>Terms & Conditions</Text>
+            <Text style={[styles.settingText, isDarkMode && styles.darkText]}>{t.termsConditions}</Text>
           </View>
           <Ionicons name="chevron-forward" size={20} color={isDarkMode ? '#fff' : '#000'} />
         </TouchableOpacity>
@@ -166,7 +234,7 @@ const Profile = () => {
       <Modal animationType="slide" transparent={true} visible={modalVisible}>
         <View style={styles.modalOverlay}>
           <View style={[styles.modalView, isDarkMode && styles.darkModal]}>
-            <Text style={[styles.modalTitle, isDarkMode && styles.darkText]}>Edit Profile</Text>
+            <Text style={[styles.modalTitle, isDarkMode && styles.darkText]}>{t.editProfile}</Text>
 
             <TextInput
               placeholder="Name"
@@ -192,10 +260,10 @@ const Profile = () => {
 
             <View style={styles.modalActions}>
               <Pressable style={styles.cancelButton} onPress={() => setModalVisible(false)}>
-                <Text style={{ color: '#fff' }}>Cancel</Text>
+                <Text style={{ color: '#fff' }}>{t.cancel}</Text>
               </Pressable>
               <Pressable style={styles.saveButton} onPress={saveProfile}>
-                <Text style={{ color: '#fff' }}>Save</Text>
+                <Text style={{ color: '#fff' }}>{t.save}</Text>
               </Pressable>
             </View>
           </View>
@@ -341,6 +409,45 @@ const styles = StyleSheet.create({
   },
   logout: {
     marginBottom: 20,
+  },
+  // Language selector styles
+  languageDropdownContainer: {
+    position: 'absolute',
+    top: 15,
+    right: 15,
+    zIndex: 1,
+  },
+  languageButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    backgroundColor: '#2196F3',
+    borderRadius: 6,
+  },
+  languageButtonText: {
+    marginRight: 4,
+    fontSize: 12,
+    color: 'white',
+  },
+  languageDropdownMenu: {
+    position: 'absolute',
+    top: 32,
+    right: 0,
+    backgroundColor: 'white',
+    borderRadius: 6,
+    padding: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 5,
+    minWidth: 100,
+  },
+  languageOption: {
+    paddingVertical: 4,
+  },
+  languageOptionText: {
+    fontSize: 12,
   },
 });
 
