@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import FooterMenu from './FooterMenu';
+import { Ionicons } from '@expo/vector-icons';
 
 const hospitalImages = {
   'Bethzatha-General-Hospital': require('../assets/Hospitals/Bethzatha-General-Hospital.jpg'),
@@ -14,7 +15,27 @@ const hospitalImages = {
 };
 
 const Hospitals = () => {
-  const navigation = useNavigation(); // Get navigation object
+  const navigation = useNavigation();
+  const [language, setLanguage] = useState("english");
+  const [isLanguageDropdownVisible, setIsLanguageDropdownVisible] = useState(false);
+
+  // Translation object
+  const translations = {
+    english: {
+      topHospitals: "Top Hospitals",
+      registerNewHospital: "Register New Hospital",
+      selectLanguage: "English",
+      english: "English",
+      amharic: "አማርኛ",
+    },
+    amharic: {
+      topHospitals: "ከፍተኛ ሆስፒታሎች",
+      registerNewHospital: "አዲስ ሆስፒታል ይመዝገቡ",
+      selectLanguage: "አማርኛ",
+      english: "English",
+      amharic: "አማርኛ",
+    },
+  };
 
   const hospitals = [
     { id: 1, name: "Bethzatha General Hospital", role: "Founded in May 2007, by the Kadisco group, the hospital is known for its objectives to secure the health of the society.", img: "Bethzatha-General-Hospital" },
@@ -26,8 +47,49 @@ const Hospitals = () => {
     { id: 7, name: "Myungsung Christian Medical Center", role: "Surgical Care, Endoscopic & Laparoscopic Surgery, Anesthesia, Ophthalmology.", img: "Myungsung-Christian-Medical-Center" },
   ];
 
+  const t = translations[language];
+
+  const toggleLanguageDropdown = () => {
+    setIsLanguageDropdownVisible(!isLanguageDropdownVisible);
+  };
+
+  const changeLanguage = (lang) => {
+    setLanguage(lang);
+    setIsLanguageDropdownVisible(false);
+  };
+
   return (
     <View style={styles.container}>
+      {/* Language Selector */}
+      <View style={styles.headerControls}>
+        <View style={styles.languageDropdownContainer}>
+          <TouchableOpacity 
+            onPress={toggleLanguageDropdown} 
+            style={styles.languageButton}
+          >
+            <Text style={styles.languageButtonText}>{t.selectLanguage}</Text>
+            <Ionicons name="chevron-down" size={12} color="white" />
+          </TouchableOpacity>
+
+          {isLanguageDropdownVisible && (
+            <View style={styles.languageDropdownMenu}>
+              <TouchableOpacity 
+                onPress={() => changeLanguage('english')} 
+                style={styles.languageOption}
+              >
+                <Text style={styles.languageOptionText}>{t.english}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={() => changeLanguage('amharic')} 
+                style={styles.languageOption}
+              >
+                <Text style={styles.languageOptionText}>{t.amharic}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </View>
+
       {/* Scrollable Content */}
       <ScrollView
         style={styles.scrollView}
@@ -36,7 +98,7 @@ const Hospitals = () => {
       >
         {/* Hospitals Section */}
         <View style={[styles.section, styles.lightBackground]}>
-          <Text style={styles.sectionTitle}>Top Hospitals</Text>
+          <Text style={styles.sectionTitle}>{t.topHospitals}</Text>
           {hospitals.map((hospital) => (
             <View key={hospital.id} style={styles.hospitalContainer}>
               <Image
@@ -57,7 +119,7 @@ const Hospitals = () => {
         style={styles.registrationButton}
         onPress={() => navigation.navigate('HospitalRegistration')}
       >
-        <Text style={styles.buttonText}>Register New Hospital</Text>
+        <Text style={styles.buttonText}>{t.registerNewHospital}</Text>
       </TouchableOpacity>
 
       {/* Fixed Footer Menu */}
@@ -72,6 +134,49 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     position: "relative",
+  },
+  headerControls: {
+    position: 'absolute',
+    top: 15,
+    right: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  languageDropdownContainer: {
+    zIndex: 1,
+  },
+  languageButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    backgroundColor: '#2196F3',
+    borderRadius: 6,
+  },
+  languageButtonText: {
+    marginRight: 4,
+    fontSize: 12,
+    color: 'white',
+  },
+  languageDropdownMenu: {
+    position: 'absolute',
+    top: 32,
+    right: 0,
+    backgroundColor: 'white',
+    borderRadius: 6,
+    padding: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 5,
+    minWidth: 100,
+  },
+  languageOption: {
+    paddingVertical: 4,
+  },
+  languageOptionText: {
+    fontSize: 12,
   },
   registrationButton: {
     position: 'absolute',
@@ -92,6 +197,7 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
     marginBottom: 60,
+    paddingTop: 50, // Added to make space for language selector
   },
   scrollContainer: {
     flexGrow: 1,
