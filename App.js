@@ -34,7 +34,7 @@ const App = () => {
           <Stack.Screen name="PatientRegistration" component={PatientRegistration} />
           <Stack.Screen name="Appointment" component={Appointment}   options={{
               headerLeft: null, // Disable the back button
-
+              title: 'Book an Appointment'
              }} />
           <Stack.Screen name="Hospitals" component={Hospitals} />
           <Stack.Screen name="About" component={About} />

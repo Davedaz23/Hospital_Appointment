@@ -39,20 +39,23 @@ const Appointment = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [language, setLanguage] = useState("english");
   const [isLanguageDropdownVisible, setIsLanguageDropdownVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Translation object
   const translations = {
     english: {
+      welcome: "Welcome",
       userProfileTitle: "User Profile",
       name: "Name",
       email: "Email",
       phone: "Phone",
-      appointmentForm: "Appointment Form",
+      appointmentForm: "Get an Appointment",
       fullName: "Full Name *",
       enterFullName: "Enter full name",
       enterEmail: "Enter email",
       enterPhoneNumber: "Enter phone number",
       selectHospital: "Select Hospital *",
+      searchHospital: "Search Hospital",
       appointmentDate: "Appointment Date *",
       selectDate: "Select Date",
       selectedDate: "Selected Date",
@@ -66,6 +69,7 @@ const Appointment = () => {
       amharic: "አማርኛ",
     },
     amharic: {
+      welcome: "እንኳን ደህና መጣህ",
       userProfileTitle: "የተጠቃሚ መግለጫ",
       name: "ስም",
       email: "ኢሜይል",
@@ -76,6 +80,7 @@ const Appointment = () => {
       enterEmail: "ኢሜይል ያስገቡ",
       enterPhoneNumber: "ስልክ ቁጥር ያስገቡ",
       selectHospital: "ሆስፒታል ይምረጡ *",
+      searchHospital: "ሆስፒታል ፈልግ",
       appointmentDate: "የቀጠሮ ቀን *",
       selectDate: "ቀን ይምረጡ",
       selectedDate: "የተመረጠ ቀን",
@@ -208,36 +213,80 @@ const Appointment = () => {
     setIsLanguageDropdownVisible(false);
   };
 
+  const filteredHospitals = hospitals.filter(hospital =>
+    hospital.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const t = translations[language];
 
   return (
     <View style={styles.container}>
-      {/* Language Dropdown Selector */}
-      <View style={styles.languageDropdownContainer}>
-        <TouchableOpacity 
-          onPress={toggleLanguageDropdown} 
-          style={styles.languageButton}
-        >
-          <Text style={styles.languageButtonText}>{t.selectLanguage}</Text>
-          <Ionicons name="chevron-down" size={12} color="black" />
-        </TouchableOpacity>
-
-        {isLanguageDropdownVisible && (
-          <View style={styles.languageDropdownMenu}>
-            <TouchableOpacity 
-              onPress={() => changeLanguage('english')} 
-              style={styles.languageOption}
-            >
-              <Text style={styles.languageOptionText}>{t.english}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              onPress={() => changeLanguage('amharic')} 
-              style={styles.languageOption}
-            >
-              <Text style={styles.languageOptionText}>{t.amharic}</Text>
-            </TouchableOpacity>
+      {/* Combined Header and Profile Section */}
+      <View style={styles.headerProfileSection}>
+        <View style={styles.profileRow}>
+          <View style={styles.profileColumn}>
+          <View style={styles.profileRow}>
+            <Image 
+              source={{ uri: userProfile?.profilePicture || 'https://via.placeholder.com/150' }} 
+              style={styles.profilePic} 
+            />
+            <View style={styles.profileDetails}>
+            <Text style={styles.welcomeText}>{t.welcome}</Text>
+            <Text style={styles.userName}>{userProfile?.name || "N/A"}</Text>
           </View>
-        )}
+          </View>
+            <View style={styles.searchContainer}>
+              <Ionicons 
+                name="search" 
+                size={20} 
+                color="#888" 
+                style={styles.searchIcon} 
+              />
+              <TextInput
+                style={styles.searchInput}
+                placeholder={t.searchHospital}
+                placeholderTextColor="#888"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+            </View>
+          </View>
+          
+         
+        </View>
+        
+        <View style={styles.headerControls}>
+          <TouchableOpacity style={styles.notificationIcon}>
+            <Ionicons name="notifications-outline" size={24} color="white" />
+          </TouchableOpacity>
+          
+          <View style={styles.languageDropdownContainer}>
+            <TouchableOpacity 
+              onPress={toggleLanguageDropdown} 
+              style={styles.languageButton}
+            >
+              <Text style={styles.languageButtonText}>{t.selectLanguage}</Text>
+              <Ionicons name="chevron-down" size={12} color="white" />
+            </TouchableOpacity>
+
+            {isLanguageDropdownVisible && (
+              <View style={styles.languageDropdownMenu}>
+                <TouchableOpacity 
+                  onPress={() => changeLanguage('english')} 
+                  style={styles.languageOption}
+                >
+                  <Text style={styles.languageOptionText}>{t.english}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  onPress={() => changeLanguage('amharic')} 
+                  style={styles.languageOption}
+                >
+                  <Text style={styles.languageOptionText}>{t.amharic}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </View>
       </View>
 
       <ScrollView
@@ -245,24 +294,6 @@ const Appointment = () => {
         contentContainerStyle={styles.scrollContainer}
         showsVerticalScrollIndicator={true}
       >
-        {userProfile && (
-          <View style={styles.profileSection}>
-            <Text style={styles.profileTitle}>{t.userProfileTitle}</Text>
-            
-            {/* Profile Picture Section */}
-            <View style={styles.profilePicContainer}>
-              <Image 
-                source={{ uri: userProfile.profilePicture || 'https://via.placeholder.com/150' }} 
-                style={styles.profilePic} 
-              />
-            </View>
-            
-            <Text style={styles.profileText}>{t.name}: {userProfile.name || "N/A"}</Text>
-            <Text style={styles.profileText}>{t.email}: {userProfile.email || "N/A"}</Text>
-            <Text style={styles.profileText}>{t.phone}: {formData.phoneNumber}</Text>
-          </View>
-        )}
-
         <Text style={styles.title}>{t.appointmentForm}</Text>
 
         <Text style={styles.label}>{t.fullName}</Text>
@@ -297,7 +328,7 @@ const Appointment = () => {
             onValueChange={(itemValue) => handleChange("hospitalID", itemValue)}
           >
             <Picker.Item label={t.selectHospital} value="" />
-            {hospitals.map((hospital) => (
+            {filteredHospitals.map((hospital) => (
               <Picker.Item key={hospital.id} label={hospital.name} value={hospital.id} />
             ))}
           </Picker>
@@ -353,22 +384,88 @@ const styles = StyleSheet.create({
     flex: 1,
     position: "relative",
   },
-  languageDropdownContainer: {
+  headerProfileSection: {
+    width: '100%',
+    padding: 15,
+    backgroundColor: "#2196F3",
+    paddingTop: 40,
+  },
+  profileRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 15,
+  },
+  profileColumn: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    marginRight: 20,
+  },
+  profilePic: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 2,
+    borderColor: 'white',
+    marginBottom: 10,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: 200,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    backgroundColor: 'white',
+    paddingHorizontal: 10,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    height: 40,
+    paddingVertical: 0,
+  },
+  profileDetails: {
+    flex: 1,
+    justifyContent: 'center',
+    marginLeft:10,
+  },
+  welcomeText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 3,
+  },
+  userName: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  headerControls: {
     position: 'absolute',
-    top: 20,
-    right: 20,
+    top: 15,
+    right: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  notificationIcon: {
+    marginRight: 15,
+  },
+  languageDropdownContainer: {
     zIndex: 1,
   },
   languageButton: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     borderRadius: 6,
   },
   languageButtonText: {
     marginRight: 4,
     fontSize: 12,
+    color: 'white',
   },
   languageDropdownMenu: {
     position: 'absolute',
@@ -382,6 +479,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 6,
     elevation: 5,
+    minWidth: 100,
   },
   languageOption: {
     paddingVertical: 4,
@@ -397,38 +495,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 20,
     paddingBottom: 80,
-  },
-  profileSection: {
-    color: "rgb(247, 242, 242)",
-    marginBottom: 20,
-    padding: 15,
-    backgroundColor: "rgb(0, 17, 255)",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    alignItems: 'center',
-  },
-  profilePicContainer: {
-    marginBottom: 15,
-  },
-  profilePic: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 2,
-    borderColor: '#2196F3',
-  },
-  profileTitle: {
-    color: "rgb(247, 242, 242)",
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  profileText: {
-    color: "rgb(247, 242, 242)",
-    fontSize: 16,
-    marginBottom: 5,
-    alignSelf: 'flex-start',
   },
   title: {
     fontSize: 24,
