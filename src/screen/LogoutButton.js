@@ -28,28 +28,7 @@ const LogoutButton = ({ isDarkMode, styles }) => {
     </TouchableOpacity>
   );
 };
-const styles = StyleSheet.create({
- 
- 
-  darkText: {
-    color: '#fff',
-  },
-  settingsContainer: {
-    marginTop: 20,
-  },
-  settingItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
- 
-  settingText: {
-    fontSize: 16,
-  },
-});
+
 
 
 export default LogoutButton;
