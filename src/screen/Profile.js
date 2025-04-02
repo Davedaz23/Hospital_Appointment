@@ -19,11 +19,13 @@ import app from '../config/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { launchImageLibraryAsync, MediaTypeOptions } from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-
+import { useNavigation } from '@react-navigation/native';
 // Initialize Firestore and Storage
 const db = getFirestore(app);
 
 const Profile = () => {
+  const navigation = useNavigation(); // ✅ Get navigation object
+
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -68,30 +70,49 @@ const Profile = () => {
 
   const t = translations[language];
 
-  useEffect(() => {
-    const loadPhoneNumber = async () => {
-      try {
-        const storedPhone = await AsyncStorage.getItem('userPhone');
-        if (storedPhone) {
-          setPhone(storedPhone);
-          const userRef = doc(db, 'users', storedPhone);
-          const userSnapshot = await getDoc(userRef);
+  // Add this state at the top
+const [role, setRole] = useState('user');
 
-          if (userSnapshot.exists()) {
-            const userData = userSnapshot.data();
-            setName(userData.name || '');
-            setEmail(userData.email || '');
-            setProfilePicture(userData.profilePicture || '');
-          } else {
-            Alert.alert("Error", "No such document!");
-          }
+// Modify your useEffect to fetch the role
+useEffect(() => {
+  const loadPhoneNumber = async () => {
+    try {
+      const storedPhone = await AsyncStorage.getItem('userPhone');
+      if (storedPhone) {
+        setPhone(storedPhone);
+        const userRef = doc(db, 'users', storedPhone);
+        const userSnapshot = await getDoc(userRef);
+
+        if (userSnapshot.exists()) {
+          const userData = userSnapshot.data();
+          setName(userData.name || '');
+          setEmail(userData.email || '');
+          setProfilePicture(userData.profilePicture || '');
+
+          const role = userData.role || 'user'; // Default to 'user'
+          setRole(role); // Set the role in the state
+        } else {
+          Alert.alert("Error", "No such document!");
         }
-      } catch (error) {
-        Alert.alert("Error", "Error loading phone number: " + error.message);
       }
-    };
-    loadPhoneNumber();
-  }, []);
+    } catch (error) {
+      Alert.alert("Error", "Error loading phone number: " + error.message);
+    }
+  };
+  loadPhoneNumber();
+}, []);
+
+// Conditionally render the admin dashboard link
+{role === 'admin' && (
+  <TouchableOpacity style={styles.settingItem} onPress={() => navigation.navigate('AdminDashboard')}>
+    <View style={styles.iconTextContainer}>
+      <Ionicons name="settings-outline" size={20} color={isDarkMode ? '#fff' : '#000'} />
+      <Text style={[styles.settingText, isDarkMode && styles.darkText]}>Admin Dashboard</Text>
+    </View>
+    <Ionicons name="chevron-forward" size={20} color={isDarkMode ? '#fff' : '#000'} />
+  </TouchableOpacity>
+)}
+
 
   const toggleDarkMode = () => setIsDarkMode(prev => !prev);
   const toggleNotifications = () => setNotificationsEnabled(prev => !prev);
@@ -216,6 +237,13 @@ const Profile = () => {
           </View>
           <Ionicons name="chevron-forward" size={20} color={isDarkMode ? '#fff' : '#000'} />
         </TouchableOpacity>
+        <TouchableOpacity style={styles.settingItem} onPress={() => navigation.navigate('AdminDashboard')}>
+  <View style={styles.iconTextContainer}>
+    <Ionicons name="settings-outline" size={20} color={isDarkMode ? '#fff' : '#000'} />
+    <Text style={[styles.settingText, isDarkMode && styles.darkText]}>Admin Dashboard</Text>
+  </View>
+  <Ionicons name="chevron-forward" size={20} color={isDarkMode ? '#fff' : '#000'} />
+</TouchableOpacity>
 
         <TouchableOpacity style={styles.settingItem} onPress={() => navigation.navigate('TermsConditions')}>
           <View style={styles.iconTextContainer}>

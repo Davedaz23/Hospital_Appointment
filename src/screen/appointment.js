@@ -18,10 +18,12 @@ import db from '../config/firestoreConfig';
 import { collection, getDocs, query, where, setDoc, doc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { useRoute } from '@react-navigation/native';
+
 
 const Appointment = () => {
   const navigation = useNavigation();
-
+  const route = useRoute();  // Get the route object
   // State for form data
   const [formData, setFormData] = useState({
     fullName: "",
@@ -40,6 +42,7 @@ const Appointment = () => {
   const [language, setLanguage] = useState("english");
   const [isLanguageDropdownVisible, setIsLanguageDropdownVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const { selectedHospital } = route.params || {};  // Get selected hospital from params
 
   // Translation object
   const translations = {
@@ -103,6 +106,17 @@ const Appointment = () => {
 
     fetchData();
   }, []);
+  useEffect(() => {
+    if (selectedHospital) {
+      // Automatically set the selected hospital's name and ID in the form
+      setFormData((prevData) => ({
+        ...prevData,
+        hospitalName: selectedHospital.name,
+        hospitalID: selectedHospital.id,
+      }));
+    }
+    // Other initialization logic
+  }, [selectedHospital]);
 
   const fetchPhoneNumber = async () => {
     try {

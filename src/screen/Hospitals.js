@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import FooterMenu from './FooterMenu';
 import { Ionicons } from '@expo/vector-icons';
+import db from '../config/firestoreConfig';
+import { collection, getDocs } from 'firebase/firestore';
 
 const hospitalImages = {
   'Bethzatha-General-Hospital': require('../assets/Hospitals/Bethzatha-General-Hospital.jpg'),
@@ -16,116 +18,81 @@ const hospitalImages = {
 
 const Hospitals = () => {
   const navigation = useNavigation();
-  const [language, setLanguage] = useState("english");
-  const [isLanguageDropdownVisible, setIsLanguageDropdownVisible] = useState(false);
+  const [firebaseHospitals, setFirebaseHospitals] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false); // Admin check state
 
-  // Translation object
-  const translations = {
-    english: {
-      topHospitals: "Top Hospitals",
-      registerNewHospital: "Register New Hospital",
-      selectLanguage: "English",
-      english: "English",
-      amharic: "አማርኛ",
-    },
-    amharic: {
-      topHospitals: "ከፍተኛ ሆስፒታሎች",
-      registerNewHospital: "አዲስ ሆስፒታል ይመዝገቡ",
-      selectLanguage: "አማርኛ",
-      english: "English",
-      amharic: "አማርኛ",
-    },
-  };
+  useEffect(() => {
+    const fetchFirebaseHospitals = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'hospitals'));
+        const fetchedHospitals = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          name: doc.data().name,
+          role: doc.data().description,
+          img: doc.data().photo,
+        }));
+        setFirebaseHospitals(fetchedHospitals);
+      } catch (error) {
+        console.error('Error fetching hospitals from Firestore:', error);
+      }
+    };
+    fetchFirebaseHospitals();
+    
+    // Check if the user is an admin (this logic depends on your authentication system)
+    const checkAdminStatus = () => {
+      // Example: if user has an admin role in their profile
+      const userRole = 'admin'; // You would replace this with your actual logic
+      setIsAdmin(userRole === 'admin');
+    };
+
+    checkAdminStatus();
+  }, []);
 
   const hospitals = [
-    { id: 1, name: "Bethzatha General Hospital", role: "Founded in May 2007, by the Kadisco group, the hospital is known for its objectives to secure the health of the society.", img: "Bethzatha-General-Hospital" },
-    { id: 2, name: "Hayat Hospital", role: "A Norwegian facility run and staffed by highly experienced international and Ethiopian medical professionals.", img: "Hayat-Hospital" },
-    { id: 3, name: "Kadisco General Hospital", role: "Established in September 1996, St Gabriel General Hospital is the first private hospital of its kind.", img: "Kadisco-General-Hospital" },
-    { id: 4, name: "Landmark General Hospital", role: "Founded in 2008, the hospital is known for providing high-quality medical care services to the people of the region.", img: "Landmark-General-Hospital" },
-    { id: 5, name: "Samaritan Surgical Center", role: "Known for providing the highest standard of care and first-class treatment, the hospital is known for striving to improve the healthcare service in Ethiopia.", img: "Samaritan-Surgical-Center" },
-    { id: 6, name: "Nordic Medical Centre", role: "A Norwegian facility run and staffed by highly experienced international and Ethiopian medical professionals, the hospital delivers high-quality medical services 24/7 with a focus on family and emergency medicine.", img: "Nordic-Medical-Centre" },
-    { id: 7, name: "Myungsung Christian Medical Center", role: "Surgical Care, Endoscopic & Laparoscopic Surgery, Anesthesia, Ophthalmology.", img: "Myungsung-Christian-Medical-Center" },
+    { id: 1, name: "Bethzatha General Hospital", role: "Founded in May 2007...", img: "Bethzatha-General-Hospital" },
+    { id: 2, name: "Hayat Hospital", role: "A Norwegian facility...", img: "Hayat-Hospital" },
+    { id: 3, name: "Kadisco General Hospital", role: "Established in September 1996...", img: "Kadisco-General-Hospital" },
+    { id: 4, name: "Landmark General Hospital", role: "Founded in 2008...", img: "Landmark-General-Hospital" },
+    { id: 5, name: "Samaritan Surgical Center", role: "Known for high-quality care...", img: "Samaritan-Surgical-Center" },
+    { id: 6, name: "Nordic Medical Centre", role: "A Norwegian facility with high-quality services...", img: "Nordic-Medical-Centre" },
+    { id: 7, name: "Myungsung Christian Medical Center", role: "Surgical Care, Endoscopic & Laparoscopic Surgery...", img: "Myungsung-Christian-Medical-Center" },
+    ...firebaseHospitals,
   ];
-
-  const t = translations[language];
-
-  const toggleLanguageDropdown = () => {
-    setIsLanguageDropdownVisible(!isLanguageDropdownVisible);
-  };
-
-  const changeLanguage = (lang) => {
-    setLanguage(lang);
-    setIsLanguageDropdownVisible(false);
-  };
 
   return (
     <View style={styles.container}>
-      {/* Language Selector */}
-      <View style={styles.headerControls}>
-        <View style={styles.languageDropdownContainer}>
-          <TouchableOpacity 
-            onPress={toggleLanguageDropdown} 
-            style={styles.languageButton}
-          >
-            <Text style={styles.languageButtonText}>{t.selectLanguage}</Text>
-            <Ionicons name="chevron-down" size={12} color="white" />
-          </TouchableOpacity>
+      <ScrollView>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Top Hospitals</Text>
+          {hospitals.map((hospital) => (
+  <TouchableOpacity
+    key={hospital.id}
+    style={styles.hospitalContainer}
+    onPress={() =>
+      navigation.navigate('Appointment', {
+        selectedHospital: hospital,  // Pass the selected hospital here
+      })
+    }
+  >
+    <Image source={hospitalImages[hospital.img] || { uri: hospital.img }} style={styles.hospitalImage} />
+    <View style={styles.hospitalTextContainer}>
+      <Text style={styles.hospitalName}>{hospital.name}</Text>
+      <Text style={styles.hospitalRole}>{hospital.role}</Text>
+    </View>
+  </TouchableOpacity>
+))}
 
-          {isLanguageDropdownVisible && (
-            <View style={styles.languageDropdownMenu}>
-              <TouchableOpacity 
-                onPress={() => changeLanguage('english')} 
-                style={styles.languageOption}
-              >
-                <Text style={styles.languageOptionText}>{t.english}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                onPress={() => changeLanguage('amharic')} 
-                style={styles.languageOption}
-              >
-                <Text style={styles.languageOptionText}>{t.amharic}</Text>
-              </TouchableOpacity>
-            </View>
+          
+          {/* Conditionally display the "Register New Hospital" button for admins */}
+          {isAdmin && (
+            <TouchableOpacity 
+              style={styles.registrationButton} 
+              onPress={() => navigation.navigate('HospitalRegistration')}>
+              <Text style={styles.buttonText}>Register New Hospital</Text>
+            </TouchableOpacity>
           )}
         </View>
-      </View>
-
-      {/* Scrollable Content */}
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={true}
-      >
-        {/* Hospitals Section */}
-        <View style={[styles.section, styles.lightBackground]}>
-          <Text style={styles.sectionTitle}>{t.topHospitals}</Text>
-          {hospitals.map((hospital) => (
-            <View key={hospital.id} style={styles.hospitalContainer}>
-              <Image
-                source={hospitalImages[hospital.img]}
-                style={styles.hospitalImage}
-              />
-              <View style={styles.hospitalTextContainer}>
-                <Text style={styles.hospitalName}>{hospital.name}</Text>
-                <Text style={styles.hospitalRole}>{hospital.role}</Text>
-              </View>
-            </View>
-          ))}
-        </View>
       </ScrollView>
-      
-      {/* Button to navigate to Hospital Registration */}
-      <TouchableOpacity
-        style={styles.registrationButton}
-        onPress={() => navigation.navigate('HospitalRegistration')}
-      >
-        <Text style={styles.buttonText}>{t.registerNewHospital}</Text>
-      </TouchableOpacity>
-
-      {/* Fixed Footer Menu */}
-      <View style={styles.footer}>
-        <FooterMenu />
-      </View>
     </View>
   );
 };
@@ -133,79 +100,9 @@ const Hospitals = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    position: "relative",
-  },
-  headerControls: {
-    position: 'absolute',
-    top: 15,
-    right: 15,
-    flexDirection: 'row',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  languageDropdownContainer: {
-    zIndex: 1,
-  },
-  languageButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 8,
-    backgroundColor: '#2196F3',
-    borderRadius: 6,
-  },
-  languageButtonText: {
-    marginRight: 4,
-    fontSize: 12,
-    color: 'white',
-  },
-  languageDropdownMenu: {
-    position: 'absolute',
-    top: 32,
-    right: 0,
-    backgroundColor: 'white',
-    borderRadius: 6,
-    padding: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 5,
-    minWidth: 100,
-  },
-  languageOption: {
-    paddingVertical: 4,
-  },
-  languageOptionText: {
-    fontSize: 12,
-  },
-  registrationButton: {
-    position: 'absolute',
-    bottom: 70,
-    left: 20,
-    right: 20,
-    backgroundColor: '#007BFF',
-    padding: 15,
-    borderRadius: 5,
-    alignItems: 'center',
-    elevation: 3,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  scrollView: {
-    flex: 1,
-    marginBottom: 60,
-    paddingTop: 50, // Added to make space for language selector
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    padding: 16,
-    paddingBottom: 80,
   },
   section: {
-    marginBottom: 24,
+    padding: 16,
   },
   sectionTitle: {
     fontSize: 24,
@@ -215,50 +112,37 @@ const styles = StyleSheet.create({
   },
   hospitalContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
-    backgroundColor: '#fff',
+  },
+  hospitalImage: {
+    width: 80,
+    height: 80,
     borderRadius: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
   },
   hospitalTextContainer: {
     flex: 1,
     marginLeft: 16,
   },
   hospitalName: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   hospitalRole: {
-    fontSize: 10,
-    color: '#663',
-    maxHeight: 150,
-    overflow: 'scroll',
+    fontSize: 12,
+    color: '#555',
   },
-  hospitalImage: {
-    width: 80,
-    maxHeight: 80,
+  registrationButton: {
+    marginTop: 20,
+    backgroundColor: '#007bff',
+    padding: 12,
     borderRadius: 8,
+    alignItems: 'center',
   },
-  lightBackground: {
-    backgroundColor: '#f8f9fa',
-    padding: 16,
-    borderRadius: 8,
-  },
-  footer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 60,
-    backgroundColor: "white",
-    borderTopWidth: 1,
-    borderTopColor: "#ccc",
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

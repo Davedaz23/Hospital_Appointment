@@ -14,6 +14,7 @@ import Profile from './src/screen/Profile';
 import OtpScreen from './src/screen/Otp';
 import AppointmentList from './src/screen/AppointmentList';
 import HospitalRegistration from './src/screen/HospitalRegistration';
+import AdminDashboard from './src/screen/AdminDashboard';
 
 const Stack = createStackNavigator();
 
@@ -36,6 +37,8 @@ const App = () => {
               headerLeft: null, // Disable the back button
               title: 'Book an Appointment'
              }} />
+                     <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
+
           <Stack.Screen name="Hospitals" component={Hospitals} />
           <Stack.Screen name="About" component={About} />
           <Stack.Screen name="Profile" component={Profile} />
