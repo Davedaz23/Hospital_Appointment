@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useContext } from 'react';
 import {
   View,
   Text,
@@ -6,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  ImageBackground,
   TextInput,
   Modal,
   Pressable,
@@ -13,31 +15,35 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import FooterMenu from './FooterMenu';
+import { useNavigation } from '@react-navigation/native';
 import LogoutButton from './LogoutButton';
 import { getFirestore, doc, getDoc, updateDoc } from 'firebase/firestore';
 import app from '../config/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { launchImageLibraryAsync, MediaTypeOptions } from 'expo-image-picker';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { LanguageContext } from './LanguageContext';
+import { useTheme } from '../theme/ThemeContext';
 
 // Initialize Firestore and Storage
 const db = getFirestore(app);
 
 const Profile = () => {
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [profilePicture, setProfilePicture] = useState('');
-  const [language, setLanguage] = useState('english');
-  const [isLanguageDropdownVisible, setIsLanguageDropdownVisible] = useState(false);
+  const { language } = useContext(LanguageContext);
+  const { isDarkMode, toggleDarkMode } = useTheme();
+  const navigation = useNavigation();
 
   // Translation object
   const translations = {
     english: {
       profileTitle: "Profile",
+      careCoin: "Care Coin",
       darkMode: "Dark Mode",
       notifications: "Enable Notifications",
       helpSupport: "Help & Support",
@@ -46,12 +52,17 @@ const Profile = () => {
       editProfile: "Edit Profile",
       save: "Save",
       cancel: "Cancel",
-      selectLanguage: "English",
-      english: "English",
-      amharic: "አማርኛ",
+      error: "Error",
+      fillFields: "Please fill in all fields",
+      profileUpdated: "Profile updated successfully!",
+      profileError: "Error updating profile",
+      pictureUpdated: "Profile picture uploaded successfully!",
+      pictureError: "Error updating profile picture",
+      loadingPhone: "Error loading phone number"
     },
     amharic: {
       profileTitle: "መገለጫ",
+      careCoin: "ኬር ኮይን", // Care Coin in Amharic
       darkMode: "ጨለማ ሞድ",
       notifications: "ማሳወቂያዎችን አብቅት",
       helpSupport: "እርዳታ እና ድጋፍ",
@@ -60,9 +71,13 @@ const Profile = () => {
       editProfile: "መገለጫ አስተካክል",
       save: "አስቀምጥ",
       cancel: "ይቅር",
-      selectLanguage: "አማርኛ",
-      english: "English",
-      amharic: "አማርኛ",
+      error: "ስህተት",
+      fillFields: "እባክዎ ሁሉንም መስኮች ይሙሉ",
+      profileUpdated: "መገለጫው በተሳካ ሁኔታ ተዘምኗል!",
+      profileError: "መገለጫውን ሲዘምን ስህተት ተከስቷል",
+      pictureUpdated: "የመገለጫ ፎቶ በተሳካ ሁኔታ ተለቀቀ!",
+      pictureError: "የመገለጫ ፎቶ ሲለቀቅ ስህተት ተከስቷል",
+      loadingPhone: "ስልክ ቁጥር በማስገባት ላይ ስህተት"
     },
   };
 
@@ -93,7 +108,10 @@ const Profile = () => {
     loadPhoneNumber();
   }, []);
 
-  const toggleDarkMode = () => setIsDarkMode(prev => !prev);
+  //const toggleDarkMode = () => setIsDarkMode(prev => !prev);
+  const handleDarkModeToggle = () => {
+    toggleDarkMode();
+  };
   const toggleNotifications = () => setNotificationsEnabled(prev => !prev);
 
   const saveProfile = async () => {
@@ -145,37 +163,19 @@ const Profile = () => {
 
   return (
     <View style={[styles.container, isDarkMode && styles.darkContainer]}>
-      {/* Language Selector */}
-      <View style={styles.languageDropdownContainer}>
-        <TouchableOpacity 
-          onPress={toggleLanguageDropdown} 
-          style={styles.languageButton}
-        >
-          <Text style={styles.languageButtonText}>{t.selectLanguage}</Text>
-          <Ionicons name="chevron-down" size={12} color="white" />
-        </TouchableOpacity>
-
-        {isLanguageDropdownVisible && (
-          <View style={styles.languageDropdownMenu}>
-            <TouchableOpacity 
-              onPress={() => changeLanguage('english')} 
-              style={styles.languageOption}
-            >
-              <Text style={styles.languageOptionText}>{t.english}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              onPress={() => changeLanguage('amharic')} 
-              style={styles.languageOption}
-            >
-              <Text style={styles.languageOptionText}>{t.amharic}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
-
+      {/* Remove the language selector */}
+      {/* Background Watermark - Fixed Position */}
+              <View style={styles.watermarkContainer}>
+                <ImageBackground
+                  source={require('../assets/watermarkimage.jpg')}
+                  style={styles.watermark}
+                  resizeMode="center"
+                />
+              </View>
       {/* Profile Section */}
       <View style={styles.profileSection}>
-        <TouchableOpacity style={styles.profilePicContainer} onPress={pickImage}>
+        <Text style={[styles.headerTitle, isDarkMode && styles.darkText]}>{t.profileTitle}</Text>
+      <TouchableOpacity style={styles.profilePicContainer} onPress={pickImage}>
           <Image source={{ uri: profilePicture || 'https://via.placeholder.com/150' }} style={styles.profilePic} />
           <Ionicons name="camera" size={20} color="#fff" style={styles.cameraIcon} />
         </TouchableOpacity>
@@ -189,12 +189,34 @@ const Profile = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Settings */}
-      <View style={styles.settingsContainer}>
+       {/* Settings */}
+       <View style={styles.settingsContainer}>
         <View style={styles.settingItem}>
-          <Text style={[styles.settingText, isDarkMode && styles.darkText]}>{t.darkMode}</Text>
-          <Switch value={isDarkMode} onValueChange={toggleDarkMode} trackColor={{ false: '#767577', true: '#81b0ff' }} thumbColor={isDarkMode ? '#f5dd4b' : '#f4f3f4'} />
+          {/* <Text style={[styles.settingText, isDarkMode && styles.darkText]}>{t.darkMode}</Text> */}
+          {/* <Switch value={isDarkMode} onValueChange={handleDarkModeToggle} trackColor={{ false: '#767577', true: '#81b0ff' }} thumbColor={isDarkMode ? '#f5dd4b' : '#f4f3f4'} /> */}
         </View>
+             {/* Care Coin Menu Item */}
+       {/* Care Coin Menu Item */}
+      <TouchableOpacity 
+        style={styles.settingItem} 
+        onPress={() => navigation.navigate('CareCoin')}
+      >
+        <View style={styles.iconTextContainer}>
+          <Ionicons 
+            name="logo-bitcoin" 
+            size={20} 
+            color={isDarkMode ? '#fff' : '#000'} 
+          />
+          <Text style={[styles.settingText, isDarkMode && styles.darkText]}>
+            {t.careCoin}
+          </Text>
+        </View>
+        <Ionicons 
+          name="chevron-forward" 
+          size={20} 
+        color={isDarkMode ? '#fff' : '#000'} 
+       />
+      </TouchableOpacity>
         <View style={styles.settingItem}>
           <Text style={[styles.settingText, isDarkMode && styles.darkText]}>{t.notifications}</Text>
           <Switch value={notificationsEnabled} onValueChange={toggleNotifications} trackColor={{ false: '#767577', true: '#81b0ff' }} thumbColor={notificationsEnabled ? '#f5dd4b' : '#f4f3f4'} />
@@ -276,8 +298,28 @@ const Profile = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    padding: 20,
+    paddingInline: 20,
+    marginTop: '20%',
+    backgroundColor: 'transparent', // Ensure the background is transparent for the watermark
+  },
+  watermarkContainer: {
+    position: 'absolute',
+    top: 100,
+    left: 50,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: -1,
+  },
+  watermark: {
+    width: '90%',
+    height: '100%',
+    opacity: 0.3,
+  },
+  Container: {
+    flex: 1,
+    backgroundColor: 'transparent',
   },
   darkContainer: {
     backgroundColor: '#121212',
@@ -449,6 +491,6 @@ const styles = StyleSheet.create({
   languageOptionText: {
     fontSize: 12,
   },
-});
+})
 
 export default Profile;
