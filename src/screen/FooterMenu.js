@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, TouchableWithoutFeedback, Key
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
-const FooterMenu = () => {
+const FooterMenu = ({ isDarkMode }) => {
   const navigation = useNavigation();
   const route = useRoute(); // Get current route information
   const [activeTab, setActiveTab] = useState(route.name); // Track active tab
@@ -16,7 +16,7 @@ const FooterMenu = () => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.container}>
+      <View style={[styles.container, isDarkMode && styles.darkContainer]}>
         {/* Footer Menu */}
         <View style={styles.footerMenu}>
           {/* Home Tab */}
@@ -98,8 +98,12 @@ const FooterMenu = () => {
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: '#fff',
     flex: 1,
     padding: 10,
+  },
+  darkContainer: {
+    backgroundColor: '#1E1E1E',
   },
   footerMenu: {
     flexDirection: 'row',

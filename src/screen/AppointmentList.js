@@ -1,26 +1,72 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView, StyleSheet, Alert, RefreshControl, TouchableOpacity } from "react-native";
+import React, { useState, useEffect, useContext } from "react";
+import { View, Text, ScrollView, StyleSheet, Alert, RefreshControl, TouchableOpacity, ImageBackground } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import PropTypes from "prop-types";
 import FooterMenu from "./FooterMenu";
 import { collection, query, where, getDocs, getDoc, deleteDoc, doc, setDoc } from "firebase/firestore";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import db from '../config/firestoreConfig'; // Firestore configuration
-import AppointmentEditModal from "../components/appointmentEditModal"; // Import the EditModal component
-
-const isValidPhoneNumber = (phoneNumber) => {
-  const phoneRegex = /^\+?[0-9]{10,15}$/;
-  return phoneRegex.test(phoneNumber);
-};
+import db from '../config/firestoreConfig';
+import AppointmentEditModal from "../components/appointmentEditModal";
+import { LanguageContext } from './LanguageContext';
 
 const AppointmentList = () => {
+  const { language } = useContext(LanguageContext);
   const [appointments, setAppointments] = useState([]);
   const [phoneNumber, setPhoneNumber] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [filter, setFilter] = useState("today"); // default filter
+  const [filter, setFilter] = useState("today");
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const navigation = useNavigation();
+
+  // Translation object
+  const translations = {
+    english: {
+      title: "Appointments",
+      previous: "Previous",
+      today: "Today",
+      upcoming: "Upcoming",
+      fullName: "Full Name",
+      hospital: "Hospital",
+      date: "Date",
+      actions: "Actions",
+      noData: "No appointments found",
+      deleteTitle: "Delete Appointment",
+      deleteMessage: "Are you sure you want to delete this appointment?",
+      cancel: "Cancel",
+      success: "Success",
+      deleteSuccess: "Appointment deleted successfully",
+      error: "Error",
+      deleteError: "Failed to delete appointment",
+      updateSuccess: "Appointment updated successfully",
+      updateError: "Failed to update appointment",
+      phoneError: "Phone number not found in storage",
+      fetchError: "Failed to fetch phone number"
+    },
+    amharic: {
+      title: "ቀጠሮዎች",
+      previous: "ቀደምት",
+      today: "ዛሬ",
+      upcoming: "የሚመጡ",
+      fullName: "ሙሉ ስም",
+      hospital: "ሆስፒታል",
+      date: "ቀን",
+      actions: "ድርጊቶች",
+      noData: "ምንም ቀጠሮዎች አልተገኙም",
+      deleteTitle: "ቀጠሮ ሰርዝ",
+      deleteMessage: "ይህን ቀጠሮ ለመሰረዝ እርግጠኛ ነዎት?",
+      cancel: "ተው",
+      success: "ተሳክቷል",
+      deleteSuccess: "ቀጠሮው በተሳካ ሁኔታ ተሰርዟል",
+      error: "ስህተት",
+      deleteError: "ቀጠሮውን ለመሰረዝ አልተቻለም",
+      updateSuccess: "ቀጠሮው በተሳካ ሁኔታ ተሻሽሏል",
+      updateError: "ቀጠሮውን ለመሻሻል አልተቻለም",
+      phoneError: "ስልክ ቁጥር አልተገኘም",
+      fetchError: "ስልክ ቁጥር ማግኘት አልተቻለም"
+    }
+  };
+
+  const t = translations[language];
 
   useEffect(() => {
     const fetchPhoneNumber = async () => {
@@ -149,12 +195,21 @@ const AppointmentList = () => {
     return true;
   });
 
+
   return (
     <View style={styles.container}>
+    {/* Background Watermark - Fixed Position */}
+    <View style={styles.watermarkContainer}>
+           <ImageBackground
+              source={require('../assets/watermarkimage.jpg')}
+              style={styles.watermark}
+              resizeMode="center"
+              />
+            </View>
       <ScrollView
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
-        <Text style={styles.title}>Appointments</Text>
+        <Text style={styles.title}>{t.title}</Text>
 
         {/* Filter Buttons */}
         <View style={styles.filterContainer}>
@@ -162,32 +217,32 @@ const AppointmentList = () => {
             style={[styles.filterButton, filter === "previous" && styles.activeFilter]}
             onPress={() => setFilter("previous")}
           >
-            <Text style={styles.filterText}>Previous</Text>
+            <Text style={styles.filterText}>{t.previous}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.filterButton, filter === "today" && styles.activeFilter]}
             onPress={() => setFilter("today")}
           >
-            <Text style={styles.filterText}>Today</Text>
+            <Text style={styles.filterText}>{t.today}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.filterButton, filter === "upcoming" && styles.activeFilter]}
             onPress={() => setFilter("upcoming")}
           >
-            <Text style={styles.filterText}>Upcoming</Text>
+            <Text style={styles.filterText}>{t.upcoming}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Table Header */}
         <View style={styles.tableHeader}>
-          <Text style={[styles.cell, { flex: 2 }]}>Full Name</Text>
-          <Text style={[styles.cell, { flex: 1 }]}>Hospital</Text>
-          <Text style={styles.cell}>Date</Text>
-          <Text style={styles.cell}>Actions</Text>
+          <Text style={[styles.cell, { flex: 2 }]}>{t.fullName}</Text>
+          <Text style={[styles.cell, { flex: 1 }]}>{t.hospital}</Text>
+          <Text style={styles.cell}>{t.date}</Text>
+          <Text style={styles.cell}>{t.actions}</Text>
         </View>
 
-        {/* Table Body */}
-        {filteredAppointments.length > 0 ? (
+             {/* Table Body */}
+             {filteredAppointments.length > 0 ? (
           filteredAppointments.map((appointment) => (
             <View key={appointment.id} style={styles.tableRow}>
               <Text style={[styles.cell, { flex: 2 }]}>{appointment.fullName}</Text>
@@ -208,8 +263,8 @@ const AppointmentList = () => {
         )}
       </ScrollView>
 
-      {/* Edit Modal */}
-      {selectedAppointment && (
+       {/* Edit Modal */}
+       {selectedAppointment && (
         <AppointmentEditModal
           visible={modalVisible}
           appointment={selectedAppointment}
@@ -222,15 +277,37 @@ const AppointmentList = () => {
     </View>
   );
 };
-
-AppointmentList.propTypes = {
-  route: PropTypes.object,
-};
-
+// AppointmentList.propTypes = {
+//   route: PropTypes.object,
+// };
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
-  title: { fontSize: 24, fontWeight: "bold", textAlign: "center", marginVertical: 20 },
-
+  container: { 
+    flex: 1, 
+    marginTop: 60,
+    position: "relative",
+    backgroundColor: "transparent" 
+  },
+  title: { 
+    fontSize: 24, 
+    fontWeight: "bold", 
+    textAlign: "center", 
+    marginVertical: 20 
+  },
+  watermarkContainer: {
+    position: 'absolute',
+    top: 100,
+    left: 50,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: -1,
+  },
+  watermark: {
+    width: '90%',
+    height: '100%',
+    opacity: 0.3,
+  },
   filterContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -295,6 +372,6 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 16
   }
-});
+})
 
 export default AppointmentList;
