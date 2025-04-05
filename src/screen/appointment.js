@@ -21,11 +21,20 @@ import db from '../config/firestoreConfig';
 import { collection, getDocs, query, where, setDoc, doc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+
 import { LanguageContext } from './LanguageContext';
 
 const Appointment = () => {
   const navigation = useNavigation();
   const { language, changeLanguage } = useContext(LanguageContext);
+
+import { useRoute } from '@react-navigation/native';
+
+
+const Appointment = () => {
+  const navigation = useNavigation();
+  const route = useRoute();  // Get the route object
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -43,6 +52,9 @@ const Appointment = () => {
   const [isLanguageDropdownVisible, setIsLanguageDropdownVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+
+  const { selectedHospital } = route.params || {};  // Get selected hospital from params
+
 
   // Translation object
   const translations = {
@@ -125,6 +137,17 @@ const Appointment = () => {
 
     fetchData();
   }, []);
+  useEffect(() => {
+    if (selectedHospital) {
+      // Automatically set the selected hospital's name and ID in the form
+      setFormData((prevData) => ({
+        ...prevData,
+        hospitalName: selectedHospital.name,
+        hospitalID: selectedHospital.id,
+      }));
+    }
+    // Other initialization logic
+  }, [selectedHospital]);
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(

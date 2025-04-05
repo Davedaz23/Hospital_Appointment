@@ -1,9 +1,14 @@
-import React, { useContext } from 'react';
+
 import { View, Text, Image, ImageBackground, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import FooterMenu from './FooterMenu';
 import { Ionicons } from '@expo/vector-icons';
 import { LanguageContext } from './LanguageContext';
+
+import React, { useState, useEffect } from 'react';
+import db from '../config/firestoreConfig';
+import { collection, getDocs } from 'firebase/firestore';
+
 
 const hospitalImages = {
   'Bethzatha-General-Hospital': require('../assets/Hospitals/Bethzatha-General-Hospital.jpg'),
@@ -17,6 +22,7 @@ const hospitalImages = {
 
 const Hospitals = () => {
   const navigation = useNavigation();
+
   const { language } = useContext(LanguageContext);
 
   // Translation object
@@ -69,10 +75,52 @@ const Hospitals = () => {
     { id: 5, name: t.hospital5, role: t.hospital5Desc, img: "Samaritan-Surgical-Center" },
     { id: 6, name: t.hospital6, role: t.hospital6Desc, img: "Nordic-Medical-Centre" },
     { id: 7, name: t.hospital7, role: t.hospital7Desc, img: "Myungsung-Christian-Medical-Center" },
+
+  const [firebaseHospitals, setFirebaseHospitals] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false); // Admin check state
+
+  useEffect(() => {
+    const fetchFirebaseHospitals = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'hospitals'));
+        const fetchedHospitals = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          name: doc.data().name,
+          role: doc.data().description,
+          img: doc.data().photo,
+        }));
+        setFirebaseHospitals(fetchedHospitals);
+      } catch (error) {
+        console.error('Error fetching hospitals from Firestore:', error);
+      }
+    };
+    fetchFirebaseHospitals();
+    
+    // Check if the user is an admin (this logic depends on your authentication system)
+    const checkAdminStatus = () => {
+      // Example: if user has an admin role in their profile
+      const userRole = 'admin'; // You would replace this with your actual logic
+      setIsAdmin(userRole === 'admin');
+    };
+
+    checkAdminStatus();
+  }, []);
+
+  const hospitals = [
+    { id: 1, name: "Bethzatha General Hospital", role: "Founded in May 2007...", img: "Bethzatha-General-Hospital" },
+    { id: 2, name: "Hayat Hospital", role: "A Norwegian facility...", img: "Hayat-Hospital" },
+    { id: 3, name: "Kadisco General Hospital", role: "Established in September 1996...", img: "Kadisco-General-Hospital" },
+    { id: 4, name: "Landmark General Hospital", role: "Founded in 2008...", img: "Landmark-General-Hospital" },
+    { id: 5, name: "Samaritan Surgical Center", role: "Known for high-quality care...", img: "Samaritan-Surgical-Center" },
+    { id: 6, name: "Nordic Medical Centre", role: "A Norwegian facility with high-quality services...", img: "Nordic-Medical-Centre" },
+    { id: 7, name: "Myungsung Christian Medical Center", role: "Surgical Care, Endoscopic & Laparoscopic Surgery...", img: "Myungsung-Christian-Medical-Center" },
+    ...firebaseHospitals,
+
   ];
 
   return (
     <View style={styles.container}>
+
       {/* Scrollable Content */}
 
       {/* Background Watermark - Fixed Position */}
@@ -103,21 +151,40 @@ const Hospitals = () => {
               </View>
             </View>
           ))}
+
+      <ScrollView>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Top Hospitals</Text>
+          {hospitals.map((hospital) => (
+  <TouchableOpacity
+    key={hospital.id}
+    style={styles.hospitalContainer}
+    onPress={() =>
+      navigation.navigate('Appointment', {
+        selectedHospital: hospital,  // Pass the selected hospital here
+      })
+    }
+  >
+    <Image source={hospitalImages[hospital.img] || { uri: hospital.img }} style={styles.hospitalImage} />
+    <View style={styles.hospitalTextContainer}>
+      <Text style={styles.hospitalName}>{hospital.name}</Text>
+      <Text style={styles.hospitalRole}>{hospital.role}</Text>
+    </View>
+  </TouchableOpacity>
+))}
+
+          
+          {/* Conditionally display the "Register New Hospital" button for admins */}
+          {isAdmin && (
+            <TouchableOpacity 
+              style={styles.registrationButton} 
+              onPress={() => navigation.navigate('HospitalRegistration')}>
+              <Text style={styles.buttonText}>Register New Hospital</Text>
+            </TouchableOpacity>
+          )}
+
         </View>
       </ScrollView>
-      
-      {/* Button to navigate to Hospital Registration */}
-      <TouchableOpacity
-        style={styles.registrationButton}
-        onPress={() => navigation.navigate('HospitalRegistration')}
-      >
-        <Text style={styles.buttonText}>{t.registerNewHospital}</Text>
-      </TouchableOpacity>
-
-      {/* Fixed Footer Menu */}
-      <View style={styles.footer}>
-        <FooterMenu />
-      </View>
     </View>
   );
 };
@@ -125,6 +192,7 @@ const Hospitals = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+
     position: "relative",
     backgroundColor: 'transparent',
   },
@@ -172,6 +240,11 @@ const styles = StyleSheet.create({
   section: {
     marginBottom: 24,
     backgroundColor: 'transparent',
+
+  },
+  section: {
+    padding: 16,
+
   },
   sectionTitle: {
     fontSize: 24,
@@ -182,17 +255,21 @@ const styles = StyleSheet.create({
   },
   hospitalContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
-    backgroundColor: '#fff',
+  },
+  hospitalImage: {
+    width: 80,
+    height: 80,
     borderRadius: 8,
+
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 5,
     padding: 10,
+
   },
   hospitalTextContainer: {
     flex: 1,
@@ -203,6 +280,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   hospitalRole: {
+
     fontSize: 14,
     color: '#666',
   },
@@ -213,17 +291,22 @@ const styles = StyleSheet.create({
   },
   lightBackground: {
     padding: 16,
-    borderRadius: 8,
+
+    fontSize: 12,
+    color: '#555',
   },
-  footer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 60,
-    backgroundColor: "white",
-    borderTopWidth: 1,
-    borderTopColor: "#ccc",
+  registrationButton: {
+    marginTop: 20,
+    backgroundColor: '#007bff',
+    padding: 12,
+
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 

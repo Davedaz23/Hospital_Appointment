@@ -15,13 +15,18 @@ import Profile from './src/screen/Profile';
 import OtpScreen from './src/screen/Otp';
 import AppointmentList from './src/screen/AppointmentList';
 import HospitalRegistration from './src/screen/HospitalRegistration';
+
 import { ThemeProvider } from './src/theme/ThemeContext';
 import CareCoin from './src/screen/careCoin';
+
+import AdminDashboard from './src/screen/AdminDashboard';
+
 
 const Stack = createStackNavigator();
 
 const App = () => {
   return (
+
     <ThemeProvider>
       <LanguageProvider>
         <AuthProvider> 
@@ -48,6 +53,7 @@ const App = () => {
                   headerLeft: null,
                 }} 
               />
+ <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
               <Stack.Screen name="Hospitals" component={Hospitals} />
               <Stack.Screen name="About" component={About} />
               <Stack.Screen name="Profile" component={Profile} />
@@ -62,6 +68,7 @@ const App = () => {
         </AuthProvider>
       </LanguageProvider>
     </ThemeProvider>
+
   );
 };
 

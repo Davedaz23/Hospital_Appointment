@@ -65,7 +65,7 @@ const OtpScreen = () => {
         <>
           <Image source={{ uri: userData.profilePicture }} style={styles.profilePicture} />
           <Text style={styles.title}>Welcome, {userData.name}</Text>
-          <Text style={styles.subTitle}>A verification code has been sent to {userData.email || userData.phone}</Text>
+          <Text style={styles.subTitle}>A verification code has been sent to {userData.email || userData.phone} {userData.otp}</Text>
         </>
       )}
       <TextInput
