@@ -1,4 +1,9 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
+import app from '../config/firebaseConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import applyForService from '../services/applyForService';
+
 import {
   View,
   Text,
@@ -15,8 +20,11 @@ import { useTheme } from '../theme/ThemeContext';
 const CareCoin = ({ navigation }) => {
   const { language } = useContext(LanguageContext);
   const { isDarkMode } = useTheme();
+  const [coinBalance, setCoinBalance] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Translation object
+  const db = getFirestore(app);
+
   const translations = {
     english: {
       careCoins: "Your Care Coins",
@@ -38,65 +46,111 @@ const CareCoin = ({ navigation }) => {
 
   const t = translations[language];
 
+  useEffect(() => {
+    const fetchCoins = async () => {
+      setLoading(true); // Start loading
+      try {
+        const storedPhone = await AsyncStorage.getItem('userPhone');
+        if (!storedPhone) {
+          console.log('No user found');
+          setCoinBalance(0);
+          return;
+        }
+
+        const cleanedPhone = storedPhone.replace(/\D/g, '').trim(); // Remove non-numeric characters
+        const phoneWithPlus = `+${cleanedPhone}`; // Format with '+'
+
+        // Query for both phone formats
+        const coinsQuery = query(
+          collection(db, 'careCoins'),
+          where('phoneNumber', 'in', [cleanedPhone, phoneWithPlus])
+        );
+
+        const querySnapshot = await getDocs(coinsQuery);
+        let totalCoins = 0;
+
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          console.log(data);
+          totalCoins += data.amount || 0; // Sum up the amounts
+        });
+
+        setCoinBalance(totalCoins || 0); // Set total coins or 0 if none found
+      } catch (error) {
+        console.error('Error fetching Care Coins:', error);
+        setCoinBalance(0); // Handle error
+      } finally {
+        setLoading(false); // End loading
+      }
+    };
+
+    fetchCoins(); // Fetch coins on component mount
+  }, []);
+
+  const services = [
+    {
+      name: t.freeAmbulance,
+      image: require('../assets/ambulance.png'),
+      coinRequired: 100,
+      serviceType: 'ambulance',
+    },
+    {
+      name: t.loans,
+      image: require('../assets/loan.png'),
+      coinRequired: 200,
+      serviceType: 'loan',
+    },
+    {
+      name: t.fullCheckup,
+      image: require('../assets/checkup.png'),
+      coinRequired: 150,
+      serviceType: 'checkup',
+    },
+  ];
+
   return (
     <View style={[styles.container, isDarkMode && styles.darkContainer]}>
-         {/* Background Watermark - Fixed Position */}
-           <View style={styles.watermarkContainer}>
-              <ImageBackground
-                source={require('../assets/watermarkimage.jpg')}
-                style={styles.watermark}
-                resizeMode="center"
-                 />
-             </View>
-      {/* Coin Section */}
+      <View style={styles.watermarkContainer}>
+        <ImageBackground
+          source={require('../assets/watermarkimage.jpg')}
+          style={styles.watermark}
+          resizeMode="center"
+        />
+      </View>
+
       <View style={styles.coinSection}>
-        <Text style={[styles.coinTitle, isDarkMode && styles.darkText]}>{t.careCoins}</Text>
+        <Text style={[styles.coinTitle, isDarkMode && styles.darkText]}>
+          {t.careCoins}
+        </Text>
         <View style={styles.coinContainer}>
           <Ionicons name="logo-bitcoin" size={40} color="#FFD700" />
-          <Text style={styles.coinAmount}>500</Text>
+          <Text style={styles.coinAmount}>
+            {loading ? '...' : coinBalance !== null ? coinBalance : '0'}
+          </Text>
         </View>
       </View>
 
       <ScrollView style={styles.servicesContainer}>
-        {/* Free Ambulance Section */}
-        <TouchableOpacity style={[styles.serviceCard, isDarkMode && styles.darkCard]}>
-          <Image 
-            source={require('../assets/ambulance.png')} 
-            style={styles.serviceImage}
-          />
-          <View style={styles.serviceTextContainer}>
-            <Text style={[styles.serviceTitle, isDarkMode && styles.darkText]}>{t.freeAmbulance}</Text>
-            <Text style={styles.serviceCost}>100 {t.coins}</Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* Loans Section */}
-        <TouchableOpacity style={[styles.serviceCard, isDarkMode && styles.darkCard]}>
-          <Image 
-            source={require('../assets/loan.png')} 
-            style={styles.serviceImage}
-          />
-          <View style={styles.serviceTextContainer}>
-            <Text style={[styles.serviceTitle, isDarkMode && styles.darkText]}>{t.loans}</Text>
-            <Text style={styles.serviceCost}>200 {t.coins}</Text>
-          </View>
-        </TouchableOpacity>
-
-        {/* Full Check-up Section */}
-        <TouchableOpacity style={[styles.serviceCard, isDarkMode && styles.darkCard]}>
-          <Image 
-            source={require('../assets/checkup.png')} 
-            style={styles.serviceImage}
-          />
-          <View style={styles.serviceTextContainer}>
-            <Text style={[styles.serviceTitle, isDarkMode && styles.darkText]}>{t.fullCheckup}</Text>
-            <Text style={styles.serviceCost}>150 {t.coins}</Text>
-          </View>
-        </TouchableOpacity>
+        {services.map((service, index) => (
+          <TouchableOpacity
+            key={index}
+            style={[styles.serviceCard, isDarkMode && styles.darkCard]}
+            onPress={() => applyForService(service.serviceType)}
+          >
+            <Image source={service.image} style={styles.serviceImage} />
+            <View style={styles.serviceTextContainer}>
+              <Text style={[styles.serviceTitle, isDarkMode && styles.darkText]}>
+                {service.name}
+              </Text>
+              <Text style={styles.serviceCost}>
+                {service.coinRequired} {t.coins}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ))}
       </ScrollView>
 
-      {/* Transfer Button */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.transferButton}
         onPress={() => navigation.navigate('TransferCoin')}
       >
@@ -125,10 +179,6 @@ const styles = StyleSheet.create({
     height: '100%',
     opacity: 0.3,
   },
-  Container: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
   darkContainer: {
     backgroundColor: '#121212',
   },
@@ -142,7 +192,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
     elevation: 5,
-    paddingTop: '20%'
+    paddingTop: '20%',
   },
   coinTitle: {
     color: 'white',
@@ -171,13 +221,11 @@ const styles = StyleSheet.create({
   },
   serviceCard: {
     flexDirection: 'row',
-    backgroundColor: 'transparent', // Use transparent to show the watermark below
-   // borderRadius: 10,
+    backgroundColor: 'transparent',
     padding: 15,
     marginBottom: 15,
     alignItems: 'center',
     elevation: 3,
-    //opacity: 0.3,
   },
   darkCard: {
     backgroundColor: '#333',

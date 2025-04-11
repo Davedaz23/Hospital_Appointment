@@ -3,7 +3,7 @@ import {
   View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, Image 
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc,addDoc,collection,setDoc } from "firebase/firestore";
 import db from '../config/firestoreConfig'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -42,22 +42,61 @@ const OtpScreen = () => {
       Alert.alert("Error", "Please enter the OTP.");
       return;
     }
-
+  
     if (otp === fetchedOtp) {
       console.log("OTP verified successfully.");
-      
-      // Store the phone number in AsyncStorage
+  
+      // Save the phone number in AsyncStorage
       await AsyncStorage.setItem('userPhone', identifier);
-
-      // Update user status to active in Firestore
+  
       const userDocRef = doc(db, 'users', identifier);
+  
+      // Update user status to active
       await updateDoc(userDocRef, { status: "active" });
-
-      navigation.navigate("Appointment", { identifier });
+  
+      // Give 500 CareCoin
+      const coinAmount = 500;
+  
+      try {
+        // Record transaction in careCoins collection
+        await addDoc(collection(db, 'careCoins'), {
+          phoneNumber: identifier, // use phone as ID
+          amount: coinAmount,
+          type: 'earn',
+          reason: 'OTP verification reward',
+          createdAt: new Date()
+        });
+  
+        // Update or create userCoins record
+        const userCoinsRef = doc(db, 'userCoins', identifier);
+        const userCoinsSnap = await getDoc(userCoinsRef);
+  
+        if (userCoinsSnap.exists()) {
+          const currentCoins = userCoinsSnap.data().totalCoins || 0;
+          await updateDoc(userCoinsRef, {
+            totalCoins: currentCoins + coinAmount,
+            lastUpdated: new Date()
+          });
+        } else {
+          await setDoc(userCoinsRef, {
+            totalCoins: coinAmount,
+            lastUpdated: new Date()
+          });
+        }
+  
+        Alert.alert("Success", "OTP verified and 500 CareCoins awarded!");
+        navigation.navigate("Appointment", { identifier });
+  
+      } catch (error) {
+        console.error("Error awarding CareCoins:", error);
+        Alert.alert("Error", "Something went wrong while awarding coins.");
+      }
+  
     } else {
       Alert.alert("Error", "Invalid OTP. Please try again.");
     }
   };
+  
 
   return (
     <View style={styles.container}>

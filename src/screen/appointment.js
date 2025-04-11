@@ -18,11 +18,12 @@ import { useNavigation } from "@react-navigation/native";
 import { Picker } from '@react-native-picker/picker';
 import FooterMenu from "./FooterMenu";
 import db from '../config/firestoreConfig';
-import { collection, getDocs, query, where, setDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, query, where, setDoc, doc,getDoc, updateDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useRoute } from '@react-navigation/native';
+
 import { LanguageContext } from './LanguageContext';
 
 
@@ -31,6 +32,8 @@ import { LanguageContext } from './LanguageContext';
 const Appointment = () => {
   const navigation = useNavigation();
   const { language, changeLanguage } = useContext(LanguageContext);
+
+
 
   const route = useRoute();  // Get the route object
 
@@ -248,16 +251,38 @@ const Appointment = () => {
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
-
+  
     try {
       const payload = {
         ...formData,
         app_date: formData.app_date.toISOString().split("T")[0],
         patientId: userProfile?.uid || "",
       };
-
+  
       const appointmentsCollection = collection(db, 'appointments');
       await setDoc(doc(appointmentsCollection), payload);
+  
+      // Reference to the CareCoin document
+      const careCoinRef = doc(db, 'careCoins', formData.phoneNumber); // Use phoneNumber as the document ID
+      const careCoinDoc = await getDoc(careCoinRef);
+  
+      if (careCoinDoc.exists()) {
+        // If the document exists, update the existing amount
+        const existingData = careCoinDoc.data();
+        const newAmount = (existingData.amount || 0) + 5; // Increment by 5
+  
+        await setDoc(careCoinRef, { amount: newAmount }, { merge: true });
+      } else {
+        // If the document does not exist, create it with 5 points
+        await setDoc(careCoinRef, {
+          phoneNumber: formData.phoneNumber,
+          amount: 5, // Start with 5 points
+          type: 'earn',
+          reason: 'Appointment creation reward',
+          createdAt: new Date()
+        });
+      }
+  
       Alert.alert(t.success, t.appointmentCreated);
       navigation.navigate("AppointmentList");
     } catch (error) {

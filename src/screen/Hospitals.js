@@ -5,7 +5,7 @@ import FooterMenu from './FooterMenu';
 import { Ionicons } from '@expo/vector-icons';
 import { LanguageContext } from './LanguageContext';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import db from '../config/firestoreConfig';
 import { collection, getDocs } from 'firebase/firestore';
 
@@ -67,14 +67,14 @@ const Hospitals = () => {
 
   const t = translations[language];
 
-  const hospitals = [
-    { id: 1, name: t.hospital1, role: t.hospital1Desc, img: "Bethzatha-General-Hospital" },
-    { id: 2, name: t.hospital2, role: t.hospital2Desc, img: "Hayat-Hospital" },
-    { id: 3, name: t.hospital3, role: t.hospital3Desc, img: "Kadisco-General-Hospital" },
-    { id: 4, name: t.hospital4, role: t.hospital4Desc, img: "Landmark-General-Hospital" },
-    { id: 5, name: t.hospital5, role: t.hospital5Desc, img: "Samaritan-Surgical-Center" },
-    { id: 6, name: t.hospital6, role: t.hospital6Desc, img: "Nordic-Medical-Centre" },
-    { id: 7, name: t.hospital7, role: t.hospital7Desc, img: "Myungsung-Christian-Medical-Center" },
+  // const hospitals = [
+  //   { id: 1, name: t.hospital1, role: t.hospital1Desc, img: "Bethzatha-General-Hospital" },
+  //   { id: 2, name: t.hospital2, role: t.hospital2Desc, img: "Hayat-Hospital" },
+  //   { id: 3, name: t.hospital3, role: t.hospital3Desc, img: "Kadisco-General-Hospital" },
+  //   { id: 4, name: t.hospital4, role: t.hospital4Desc, img: "Landmark-General-Hospital" },
+  //   { id: 5, name: t.hospital5, role: t.hospital5Desc, img: "Samaritan-Surgical-Center" },
+  //   { id: 6, name: t.hospital6, role: t.hospital6Desc, img: "Nordic-Medical-Centre" },
+  //   { id: 7, name: t.hospital7, role: t.hospital7Desc, img: "Myungsung-Christian-Medical-Center" },
 
   const [firebaseHospitals, setFirebaseHospitals] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false); // Admin check state
@@ -95,7 +95,7 @@ const Hospitals = () => {
       }
     };
     fetchFirebaseHospitals();
-    
+
     // Check if the user is an admin (this logic depends on your authentication system)
     const checkAdminStatus = () => {
       // Example: if user has an admin role in their profile
@@ -124,190 +124,172 @@ const Hospitals = () => {
       {/* Scrollable Content */}
 
       {/* Background Watermark - Fixed Position */}
-        <View style={styles.watermarkContainer}>
-            <ImageBackground
-                source={require('../assets/watermarkimage.jpg')}
-                style={styles.watermark}
-                resizeMode="center"
-                />
-          </View>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={true}
-      >
-        {/* Hospitals Section */}
-        <View style={[styles.section, styles.lightBackground]}>
-          <Text style={styles.sectionTitle}>{t.topHospitals}</Text>
-          {hospitals.map((hospital) => (
-            <View key={hospital.id} style={styles.hospitalContainer}>
-              <Image
-                source={hospitalImages[hospital.img]}
-                style={styles.hospitalImage}
-              />
-              <View style={styles.hospitalTextContainer}>
-                <Text style={styles.hospitalName}>{hospital.name}</Text>
-                <Text style={styles.hospitalRole}>{hospital.role}</Text>
-              </View>
+      <View style={styles.watermarkContainer}>
+        <ImageBackground
+          source={require('../assets/watermarkimage.jpg')}
+          style={styles.watermark}
+          resizeMode="center"
+        />
+      </View>
+     
+
+          <ScrollView>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Top Hospitals</Text>
+              {hospitals.map((hospital) => (
+                <TouchableOpacity
+                  key={hospital.id}
+                  style={styles.hospitalContainer}
+                  onPress={() =>
+                    navigation.navigate('Appointment', {
+                      selectedHospital: hospital,  // Pass the selected hospital here
+                    })
+                  }
+                >
+                  <Image source={hospitalImages[hospital.img] || { uri: hospital.img }} style={styles.hospitalImage} />
+                  <View style={styles.hospitalTextContainer}>
+                    <Text style={styles.hospitalName}>{hospital.name}</Text>
+                    <Text style={styles.hospitalRole}>{hospital.role}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+
+
+              {/* Conditionally display the "Register New Hospital" button for admins */}
+              {isAdmin && (
+                <TouchableOpacity
+                  style={styles.registrationButton}
+                  onPress={() => navigation.navigate('HospitalRegistration')}>
+                  <Text style={styles.buttonText}>Register New Hospital</Text>
+                </TouchableOpacity>
+              )}
+
             </View>
-          ))}
-
-      <ScrollView>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Top Hospitals</Text>
-          {hospitals.map((hospital) => (
-  <TouchableOpacity
-    key={hospital.id}
-    style={styles.hospitalContainer}
-    onPress={() =>
-      navigation.navigate('Appointment', {
-        selectedHospital: hospital,  // Pass the selected hospital here
-      })
-    }
-  >
-    <Image source={hospitalImages[hospital.img] || { uri: hospital.img }} style={styles.hospitalImage} />
-    <View style={styles.hospitalTextContainer}>
-      <Text style={styles.hospitalName}>{hospital.name}</Text>
-      <Text style={styles.hospitalRole}>{hospital.role}</Text>
-    </View>
-  </TouchableOpacity>
-))}
-
-          
-          {/* Conditionally display the "Register New Hospital" button for admins */}
-          {isAdmin && (
-            <TouchableOpacity 
-              style={styles.registrationButton} 
-              onPress={() => navigation.navigate('HospitalRegistration')}>
-              <Text style={styles.buttonText}>Register New Hospital</Text>
-            </TouchableOpacity>
-          )}
-
+          </ScrollView>
         </View>
-      </ScrollView>
-    </View>
-  );
+        );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
 
-    position: "relative",
-    backgroundColor: 'transparent',
-  },
-  watermarkContainer: {
-    position: 'absolute',
-    top: 100,
-    left: 50,
-    right: 0,
-    bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: -1,
-  },
-  watermark: {
-    width: '90%',
-    height: '100%',
-    opacity: 0.3,
-  },
-  registrationButton: {
-    position: 'absolute',
-    bottom: 70,
-    left: 20,
-    right: 20,
-    backgroundColor: '#007BFF',
-    padding: 15,
-    borderRadius: 5,
-    alignItems: 'center',
-    elevation: 3,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  scrollView: {
-    flex: 1,
-    marginBottom: 60,
-    paddingTop: 20,
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    padding: 16,
-    paddingBottom: 80,
-  },
-  section: {
-    marginBottom: 24,
-    backgroundColor: 'transparent',
+        const styles = StyleSheet.create({
+          container: {
+          flex: 1,
 
+        position: "relative",
+        backgroundColor: 'transparent',
   },
-  section: {
-    padding: 16,
+        watermarkContainer: {
+          position: 'absolute',
+        top: 100,
+        left: 50,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: -1,
+  },
+        watermark: {
+          width: '90%',
+        height: '100%',
+        opacity: 0.3,
+  },
+        registrationButton: {
+          position: 'absolute',
+        bottom: 70,
+        left: 20,
+        right: 20,
+        backgroundColor: '#007BFF',
+        padding: 15,
+        borderRadius: 5,
+        alignItems: 'center',
+        elevation: 3,
+  },
+        buttonText: {
+          color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+  },
+        scrollView: {
+          flex: 1,
+        marginBottom: 60,
+        paddingTop: 20,
+  },
+        scrollContainer: {
+          flexGrow: 1,
+        padding: 16,
+        paddingBottom: 80,
+  },
+        section: {
+          marginBottom: 24,
+        backgroundColor: 'transparent',
 
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 16,
-    backgroundColor: 'transparent',
-  },
-  hospitalContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  hospitalImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-    padding: 10,
+        section: {
+          padding: 16,
 
   },
-  hospitalTextContainer: {
-    flex: 1,
-    marginLeft: 16,
+        sectionTitle: {
+          fontSize: 24,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: 16,
+        backgroundColor: 'transparent',
   },
-  hospitalName: {
-    fontSize: 16,
-    fontWeight: 'bold',
+        hospitalContainer: {
+          flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 16,
   },
-  hospitalRole: {
+        hospitalImage: {
+          width: 80,
+        height: 80,
+        borderRadius: 8,
 
-    fontSize: 14,
-    color: '#666',
-  },
-  hospitalImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-  },
-  lightBackground: {
-    padding: 16,
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 5,
+        padding: 10,
 
-    fontSize: 12,
-    color: '#555',
   },
-  registrationButton: {
-    marginTop: 20,
-    backgroundColor: '#007bff',
-    padding: 12,
+        hospitalTextContainer: {
+          flex: 1,
+        marginLeft: 16,
+  },
+        hospitalName: {
+          fontSize: 16,
+        fontWeight: 'bold',
+  },
+        hospitalRole: {
 
-    borderRadius: 8,
-    alignItems: 'center',
+          fontSize: 14,
+        color: '#666',
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+        hospitalImage: {
+          width: 80,
+        height: 80,
+        borderRadius: 8,
+  },
+        lightBackground: {
+          padding: 16,
+
+        fontSize: 12,
+        color: '#555',
+  },
+        registrationButton: {
+          marginTop: 20,
+        backgroundColor: '#007bff',
+        padding: 12,
+
+        borderRadius: 8,
+        alignItems: 'center',
+  },
+        buttonText: {
+          color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
   },
 });
 
-export default Hospitals;
+        export default Hospitals;
