@@ -22,17 +22,16 @@ import { collection, getDocs, query, where, setDoc, doc } from 'firebase/firesto
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 
+import { useRoute } from '@react-navigation/native';
 import { LanguageContext } from './LanguageContext';
+
+
+
 
 const Appointment = () => {
   const navigation = useNavigation();
   const { language, changeLanguage } = useContext(LanguageContext);
 
-import { useRoute } from '@react-navigation/native';
-
-
-const Appointment = () => {
-  const navigation = useNavigation();
   const route = useRoute();  // Get the route object
 
   const [formData, setFormData] = useState({
