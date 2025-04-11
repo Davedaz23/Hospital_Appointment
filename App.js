@@ -1,8 +1,9 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { AuthProvider } from './src/context/AuthContext'; // Import AuthProvider
-import SearchResults from './SearchResults'; // Example screen for search results
+import { AuthProvider } from './src/context/AuthContext';
+import { LanguageProvider } from './src/screen/LanguageContext';
+import SearchResults from './SearchResults';
 import MainContent from './src/screen/main';
 import Login from './src/screen/Login';
 import Appointment from './src/screen/appointment';
@@ -15,42 +16,59 @@ import OtpScreen from './src/screen/Otp';
 import AppointmentList from './src/screen/AppointmentList';
 import HospitalRegistration from './src/screen/HospitalRegistration';
 
+import { ThemeProvider } from './src/theme/ThemeContext';
+import CareCoin from './src/screen/careCoin';
+
+import AdminDashboard from './src/screen/AdminDashboard';
+
+
 const Stack = createStackNavigator();
 
 const App = () => {
   return (
-    <AuthProvider> 
-      <NavigationContainer>
-        <Stack.Navigator initialRouteName="Login">
-          <Stack.Screen
-            name="Login"
-            component={Login}
-            options={{ title: 'Care4You',
-              headerLeft: null, // Disable the back button
 
-             }}
-          />
-          <Stack.Screen name="MainContent" component={MainContent} options={{ title: 'Main Content' }} />
-          <Stack.Screen name="PatientRegistration" component={PatientRegistration} />
-          <Stack.Screen name="Appointment" component={Appointment}   options={{
-              headerLeft: null, // Disable the back button
-              title: 'Book an Appointment'
-             }} />
-          <Stack.Screen name="Hospitals" component={Hospitals} />
-          <Stack.Screen name="About" component={About} />
-          <Stack.Screen name="Profile" component={Profile} />
-          <Stack.Screen name="Contact" component={Contact} />
-          <Stack.Screen name="HospitalRegistration" component={HospitalRegistration} />
-          <Stack.Screen name="AppointmentList" component={AppointmentList} />
-          <Stack.Screen name="OtpScreen" component={OtpScreen} />
-          <Stack.Screen
-            name="SearchResults"
-            component={SearchResults}
-            options={{ title: 'Search Results' }}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </AuthProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <AuthProvider> 
+          <NavigationContainer>
+            <Stack.Navigator 
+              initialRouteName="Login"
+              screenOptions={{
+                headerShown: false, // This will hide the header for all screens by default
+              }}
+            >
+              <Stack.Screen
+                name="Login"
+                component={Login}
+                options={{
+                  headerLeft: null,
+                }}
+              />
+              <Stack.Screen name="MainContent" component={MainContent} />
+              <Stack.Screen name="PatientRegistration" component={PatientRegistration} />
+              <Stack.Screen 
+                name="Appointment" 
+                component={Appointment}   
+                options={{
+                  headerLeft: null,
+                }} 
+              />
+ <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
+              <Stack.Screen name="Hospitals" component={Hospitals} />
+              <Stack.Screen name="About" component={About} />
+              <Stack.Screen name="Profile" component={Profile} />
+              <Stack.Screen name="Contact" component={Contact} />
+              <Stack.Screen name="HospitalRegistration" component={HospitalRegistration} />
+              <Stack.Screen name="AppointmentList" component={AppointmentList} />
+              <Stack.Screen name="OtpScreen" component={OtpScreen} />
+              <Stack.Screen name="CareCoin" component={CareCoin} />
+              <Stack.Screen name="SearchResults" component={SearchResults} />
+            </Stack.Navigator>
+          </NavigationContainer>
+        </AuthProvider>
+      </LanguageProvider>
+    </ThemeProvider>
+
   );
 };
 
