@@ -26,17 +26,14 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { LanguageContext } from './LanguageContext';
 import { useTheme } from '../theme/ThemeContext';
 
-=======
-import { useNavigation } from '@react-navigation/native';
+
 
 // Initialize Firestore and Storage
 const db = getFirestore(app);
 
 const Profile = () => {
 
-  const navigation = useNavigation(); // ✅ Get navigation object
 
-  const [isDarkMode, setIsDarkMode] = useState(false);
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
