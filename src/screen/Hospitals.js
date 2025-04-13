@@ -156,13 +156,13 @@ const Hospitals = () => {
 
 
               {/* Conditionally display the "Register New Hospital" button for admins */}
-              {isAdmin && (
+              {/* {isAdmin && (
                 <TouchableOpacity
                   style={styles.registrationButton}
                   onPress={() => navigation.navigate('HospitalRegistration')}>
                   <Text style={styles.buttonText}>Register New Hospital</Text>
                 </TouchableOpacity>
-              )}
+              )} */}
 
             </View>
           </ScrollView>

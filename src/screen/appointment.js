@@ -438,17 +438,17 @@ const Appointment = () => {
             />
 
             <Text style={styles.label}>{t.selectHospital}</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={formData.hospitalID}
-                onValueChange={(itemValue) => handleChange("hospitalID", itemValue)}
-              >
-                <Picker.Item label={t.selectHospital} value="" />
-                {filteredHospitals.map((hospital) => (
-                  <Picker.Item key={hospital.id} label={hospital.name} value={hospital.id} />
-                ))}
-              </Picker>
-            </View>
+          <View style={styles.pickerContainer}>
+            <Picker
+              selectedValue={formData.hospitalID || ""}  // Set default value
+              onValueChange={(itemValue) => handleChange("hospitalID", itemValue)}
+            >
+              <Picker.Item label={t.selectHospital} value="" />
+              {filteredHospitals.map((hospital) => (
+                <Picker.Item key={hospital.id} label={hospital.name} value={hospital.id} />
+              ))}
+            </Picker>
+          </View>
 
             <Text style={styles.label}>{t.appointmentDate}</Text>
             <Button

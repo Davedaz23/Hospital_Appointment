@@ -1,0 +1,17 @@
+{
+    "build": {
+      "production": {
+        "ios": {
+          "env": {
+            "GOOGLE_SERVICES_PLIST": "./GoogleService-Info.plist"
+          }
+        },
+        "android": {
+          "env": {
+            "GOOGLE_SERVICES_JSON": "./android/app/google-services.json"
+          }
+        }
+      }
+    }
+  }
+  

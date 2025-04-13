@@ -1,9 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, query, where, updateDoc, doc } from 'firebase/firestore';
 import app from '../config/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import applyForService from '../services/applyForService';
-
 import {
   View,
   Text,
@@ -12,6 +10,7 @@ import {
   ImageBackground,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LanguageContext } from './LanguageContext';
@@ -22,17 +21,19 @@ const CareCoin = ({ navigation }) => {
   const { isDarkMode } = useTheme();
   const [coinBalance, setCoinBalance] = useState(null);
   const [loading, setLoading] = useState(true);
-
   const db = getFirestore(app);
 
   const translations = {
     english: {
-      careCoins: "Your Care Coins",
+      careCoins: "Your Care Coins are",
       freeAmbulance: "Free Ambulance for Pregnant Women",
       loans: "Emergency Loans",
       fullCheckup: "Full Medical Check-up",
       transferCoins: "Transfer Coins",
       coins: "Coins",
+      claim: "Claim",
+      claimSuccess: "Claim successful!",
+      claimError: "Not enough coins to claim this service.",
     },
     amharic: {
       careCoins: "ኬር ኮይን",
@@ -41,6 +42,9 @@ const CareCoin = ({ navigation }) => {
       fullCheckup: "ሙሉ የህክምና ምርመራ",
       transferCoins: "ኮይን ይላኩ",
       coins: "ኮይኖች",
+      claim: "ይጠይቁ",
+      claimSuccess: "ይጠይቁ ተሳክቷል!",
+      claimError: "እቅፍ የለም ለዚህ አገልግሎት ኮይኖች ይኖሩ!",
     },
   };
 
@@ -48,7 +52,7 @@ const CareCoin = ({ navigation }) => {
 
   useEffect(() => {
     const fetchCoins = async () => {
-      setLoading(true); // Start loading
+      setLoading(true);
       try {
         const storedPhone = await AsyncStorage.getItem('userPhone');
         if (!storedPhone) {
@@ -57,10 +61,9 @@ const CareCoin = ({ navigation }) => {
           return;
         }
 
-        const cleanedPhone = storedPhone.replace(/\D/g, '').trim(); // Remove non-numeric characters
-        const phoneWithPlus = `+${cleanedPhone}`; // Format with '+'
+        const cleanedPhone = storedPhone.replace(/\D/g, '').trim();
+        const phoneWithPlus = `+${cleanedPhone}`;
 
-        // Query for both phone formats
         const coinsQuery = query(
           collection(db, 'careCoins'),
           where('phoneNumber', 'in', [cleanedPhone, phoneWithPlus])
@@ -71,20 +74,19 @@ const CareCoin = ({ navigation }) => {
 
         querySnapshot.forEach((doc) => {
           const data = doc.data();
-          console.log(data);
-          totalCoins += data.amount || 0; // Sum up the amounts
+          totalCoins += data.amount || 0;
         });
 
-        setCoinBalance(totalCoins || 0); // Set total coins or 0 if none found
+        setCoinBalance(totalCoins || 0);
       } catch (error) {
         console.error('Error fetching Care Coins:', error);
-        setCoinBalance(0); // Handle error
+        setCoinBalance(0);
       } finally {
-        setLoading(false); // End loading
+        setLoading(false);
       }
     };
 
-    fetchCoins(); // Fetch coins on component mount
+    fetchCoins();
   }, []);
 
   const services = [
@@ -107,6 +109,33 @@ const CareCoin = ({ navigation }) => {
       serviceType: 'checkup',
     },
   ];
+
+  const handleClaimService = async (service) => {
+    if (coinBalance < service.coinRequired) {
+      Alert.alert(t.claimError);
+      console.log(claimError);
+      return;
+    }
+
+    try {
+      const storedPhone = await AsyncStorage.getItem('userPhone');
+      const cleanedPhone = storedPhone.replace(/\D/g, '').trim();
+      const phoneWithPlus = `+${cleanedPhone}`;
+
+      const coinsDocRef = doc(db, 'careCoins', phoneWithPlus);
+
+      // Deduct the coins
+      await updateDoc(coinsDocRef, {
+        amount: coinBalance - service.coinRequired,
+      });
+
+      setCoinBalance((prevBalance) => prevBalance - service.coinRequired);
+      Alert.alert(t.claimSuccess);
+    } catch (error) {
+      console.error('Error claiming service:', error);
+      Alert.alert(t.claimError+service.coinRequired);
+    }
+  };
 
   return (
     <View style={[styles.container, isDarkMode && styles.darkContainer]}>
@@ -132,11 +161,7 @@ const CareCoin = ({ navigation }) => {
 
       <ScrollView style={styles.servicesContainer}>
         {services.map((service, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[styles.serviceCard, isDarkMode && styles.darkCard]}
-            onPress={() => applyForService(service.serviceType)}
-          >
+          <View key={index} style={[styles.serviceCard, isDarkMode && styles.darkCard]}>
             <Image source={service.image} style={styles.serviceImage} />
             <View style={styles.serviceTextContainer}>
               <Text style={[styles.serviceTitle, isDarkMode && styles.darkText]}>
@@ -145,8 +170,18 @@ const CareCoin = ({ navigation }) => {
               <Text style={styles.serviceCost}>
                 {service.coinRequired} {t.coins}
               </Text>
+              <TouchableOpacity
+                style={[
+                  styles.claimButton,
+                  coinBalance < service.coinRequired && styles.disabledButton,
+                ]}
+                onPress={() => handleClaimService(service)}
+                disabled={coinBalance < service.coinRequired}
+              >
+                <Text style={styles.claimButtonText}>{t.claim}</Text>
+              </TouchableOpacity>
             </View>
-          </TouchableOpacity>
+          </View>
         ))}
       </ScrollView>
 
@@ -246,6 +281,20 @@ const styles = StyleSheet.create({
   serviceCost: {
     color: '#2196F3',
     fontWeight: 'bold',
+  },
+  claimButton: {
+    backgroundColor: '#2196F3',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+  claimButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  disabledButton: {
+    backgroundColor: '#ccc',
   },
   transferButton: {
     backgroundColor: '#2196F3',

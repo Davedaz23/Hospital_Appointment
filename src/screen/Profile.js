@@ -204,8 +204,8 @@ useEffect(() => {
           <Image source={{ uri: profilePicture || 'https://via.placeholder.com/150' }} style={styles.profilePic} />
           <Ionicons name="camera" size={20} color="#fff" style={styles.cameraIcon} />
         </TouchableOpacity>
-        <Text style={[styles.profileName, isDarkMode && styles.darkText]}>{name || 'John Doe'}</Text>
-        <Text style={[styles.profileEmail, isDarkMode && styles.darkText]}>{email || 'johndoe@example.com'}</Text>
+        <Text style={[styles.profileName, isDarkMode && styles.darkText]}>{name || 'Defar Gobeze'}</Text>
+        <Text style={[styles.profileEmail, isDarkMode && styles.darkText]}>{email || 'Davegbhonesty@gmail.com'}</Text>
 
         {/* Edit Profile Button */}
         <TouchableOpacity style={styles.editButton} onPress={() => setModalVisible(true)}>
@@ -263,13 +263,13 @@ useEffect(() => {
           </View>
           <Ionicons name="chevron-forward" size={20} color={isDarkMode ? '#fff' : '#000'} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.settingItem} onPress={() => navigation.navigate('AdminDashboard')}>
+        {/* <TouchableOpacity style={styles.settingItem} onPress={() => navigation.navigate('AdminDashboard')}>
   <View style={styles.iconTextContainer}>
     <Ionicons name="settings-outline" size={20} color={isDarkMode ? '#fff' : '#000'} />
     <Text style={[styles.settingText, isDarkMode && styles.darkText]}>Admin Dashboard</Text>
   </View>
   <Ionicons name="chevron-forward" size={20} color={isDarkMode ? '#fff' : '#000'} />
-</TouchableOpacity>
+</TouchableOpacity> */}
 
         <TouchableOpacity style={styles.settingItem} onPress={() => navigation.navigate('TermsConditions')}>
           <View style={styles.iconTextContainer}>
