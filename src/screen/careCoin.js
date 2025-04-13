@@ -25,7 +25,7 @@ const CareCoin = ({ navigation }) => {
 
   const translations = {
     english: {
-      careCoins: "Your Care Coins are",
+      careCoins: "Your Care Coins",
       freeAmbulance: "Free Ambulance for Pregnant Women",
       loans: "Emergency Loans",
       fullCheckup: "Full Medical Check-up",

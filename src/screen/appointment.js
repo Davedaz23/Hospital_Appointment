@@ -18,12 +18,11 @@ import { useNavigation } from "@react-navigation/native";
 import { Picker } from '@react-native-picker/picker';
 import FooterMenu from "./FooterMenu";
 import db from '../config/firestoreConfig';
-import { collection, getDocs, query, where, setDoc, doc,getDoc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, query, where, setDoc, doc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useRoute } from '@react-navigation/native';
-
 import { LanguageContext } from './LanguageContext';
 
 
@@ -32,8 +31,6 @@ import { LanguageContext } from './LanguageContext';
 const Appointment = () => {
   const navigation = useNavigation();
   const { language, changeLanguage } = useContext(LanguageContext);
-
-
 
   const route = useRoute();  // Get the route object
 
@@ -253,36 +250,20 @@ const Appointment = () => {
     if (!validateForm()) return;
   
     try {
+      const hospitalPrefix = formData.hospitalName.substring(0, 2).toUpperCase();
+      const uniqueNumber = Math.floor(Math.random() * 10000);
+      const formattedDate = formData.app_date.toISOString().split("T")[0].replace(/-/g, "");
+      const cardNumber = `${hospitalPrefix}${formattedDate}${uniqueNumber}`;
+  
       const payload = {
         ...formData,
         app_date: formData.app_date.toISOString().split("T")[0],
+        cardNumber,
         patientId: userProfile?.uid || "",
       };
   
       const appointmentsCollection = collection(db, 'appointments');
       await setDoc(doc(appointmentsCollection), payload);
-  
-      // Reference to the CareCoin document
-      const careCoinRef = doc(db, 'careCoins', formData.phoneNumber); // Use phoneNumber as the document ID
-      const careCoinDoc = await getDoc(careCoinRef);
-  
-      if (careCoinDoc.exists()) {
-        // If the document exists, update the existing amount
-        const existingData = careCoinDoc.data();
-        const newAmount = (existingData.amount || 0) + 5; // Increment by 5
-  
-        await setDoc(careCoinRef, { amount: newAmount }, { merge: true });
-      } else {
-        // If the document does not exist, create it with 5 points
-        await setDoc(careCoinRef, {
-          phoneNumber: formData.phoneNumber,
-          amount: 5, // Start with 5 points
-          type: 'earn',
-          reason: 'Appointment creation reward',
-          createdAt: new Date()
-        });
-      }
-  
       Alert.alert(t.success, t.appointmentCreated);
       navigation.navigate("AppointmentList");
     } catch (error) {
@@ -303,7 +284,14 @@ const Appointment = () => {
   const filteredHospitals = hospitals.filter(hospital =>
     hospital.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
+  const handleHospitalSelect = (hospital) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      hospitalName: hospital.name,
+      hospitalID: hospital.id,
+    }));
+    setSearchQuery(""); // Clear search query after selection
+  };
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -341,20 +329,30 @@ const Appointment = () => {
                   </View>
                 </View>
                 <View style={styles.searchContainer}>
-                  <Ionicons 
-                    name="search" 
-                    size={20} 
-                    color="#888" 
-                    style={styles.searchIcon} 
-                  />
-                  <TextInput
-                    style={styles.searchInput}
-                    placeholder={t.searchHospital}
-                    placeholderTextColor="#888"
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                  />
-                </View>
+            <Ionicons name="search" size={20} color="#888" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder={t.searchHospital}
+              placeholderTextColor="#888"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
+
+          {searchQuery && (
+  <ScrollView style={styles.filteredHospitalsContainer}>
+    {filteredHospitals.map((hospital) => (
+      <TouchableOpacity 
+        key={hospital.id} 
+        onPress={() => handleHospitalSelect(hospital)} 
+        style={styles.hospitalItem}
+      >
+        <Text style={styles.hospitalName}>{hospital.name}</Text>
+      </TouchableOpacity>
+    ))}
+  </ScrollView>
+)}
+
               </View>
             </View>
             
@@ -437,10 +435,10 @@ const Appointment = () => {
               editable={false}
             />
 
-            <Text style={styles.label}>{t.selectHospital}</Text>
+<Text style={styles.label}>{t.selectHospital}</Text>
           <View style={styles.pickerContainer}>
             <Picker
-              selectedValue={formData.hospitalID || ""}  // Set default value
+              selectedValue={formData.hospitalID}
               onValueChange={(itemValue) => handleChange("hospitalID", itemValue)}
             >
               <Picker.Item label={t.selectHospital} value="" />
@@ -498,6 +496,34 @@ const Appointment = () => {
 };
 
 const styles = StyleSheet.create({
+  filteredHospitalsContainer: {
+    maxHeight: 150,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 10,
+    backgroundColor: 'white',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
+    zIndex: 1,
+  },
+  hospitalItem: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    backgroundColor: 'rgba(240, 248, 255, 0.9)', // Light background for items
+    borderRadius: 10,
+    marginHorizontal: 10,
+    marginVertical: 5,
+  },
+  hospitalName: {
+    fontSize: 16,
+    color: '#333', // Darker text color
+    fontWeight: '600',
+  },
   container: {
     flex: 1,
     position: "relative",
@@ -551,6 +577,7 @@ const styles = StyleSheet.create({
     borderColor: 'white',
     marginBottom: 10,
   },
+  
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',

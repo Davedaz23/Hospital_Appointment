@@ -28,6 +28,7 @@ const AppointmentList = () => {
       fullName: "Full Name",
       hospital: "Hospital",
       date: "Date",
+      cardNumber: "Card Number", // New translation for card number
       actions: "Actions",
       noData: "No appointments found",
       deleteTitle: "Delete Appointment",
@@ -50,6 +51,7 @@ const AppointmentList = () => {
       fullName: "ሙሉ ስም",
       hospital: "ሆስፒታል",
       date: "ቀን",
+      cardNumber: "ካርድ ቁጥር", // New translation for card number
       actions: "ድርጊቶች",
       noData: "ምንም ቀጠሮዎች አልተገኙም",
       deleteTitle: "ቀጠሮ ሰርዝ",
@@ -72,6 +74,7 @@ const AppointmentList = () => {
     const fetchPhoneNumber = async () => {
       try {
         const storedPhone = await AsyncStorage.getItem('userPhone');
+        
         if (storedPhone) {
           const cleanedPhone = storedPhone.slice(1).replace(/\D/g, '').trim();
           setPhoneNumber(`${cleanedPhone}`);
@@ -100,17 +103,15 @@ const AppointmentList = () => {
   };
 
   const fetchAppointments = async () => {
+    
     if (!phoneNumber) return;
-
-    if (!isValidPhoneNumber(phoneNumber)) {
-      Alert.alert("Error", "Invalid phone number format.");
-      return;
-    }
+    
 
     try {
       const appointmentsRef = collection(db, 'appointments');
       const q = query(appointmentsRef, where('phoneNumber', '==', phoneNumber));
       const querySnapshot = await getDocs(q);
+   
 
       if (!querySnapshot.empty) {
         const appointmentsList = await Promise.all(querySnapshot.docs.map(async (doc) => {
@@ -120,10 +121,13 @@ const AppointmentList = () => {
             id: doc.id,
             ...appointmentData,
             hospitalName, // Add hospital name to the appointment
+            cardNumber: appointmentData.cardNumber??"NA" // Include card number
+
           };
         }));
         setAppointments(appointmentsList);
       } else {
+        
         setAppointments([]);
       }
     } catch (error) {
@@ -133,6 +137,7 @@ const AppointmentList = () => {
   };
 
   useEffect(() => {
+    
     fetchAppointments();
   }, [phoneNumber]);
 
@@ -235,6 +240,8 @@ const AppointmentList = () => {
 
         {/* Table Header */}
         <View style={styles.tableHeader}>
+
+          <Text style={[styles.cell, { flex: 2 }]}>{t.cardNumber}</Text>
           <Text style={[styles.cell, { flex: 2 }]}>{t.fullName}</Text>
           <Text style={[styles.cell, { flex: 1 }]}>{t.hospital}</Text>
           <Text style={styles.cell}>{t.date}</Text>
@@ -243,24 +250,25 @@ const AppointmentList = () => {
 
              {/* Table Body */}
              {filteredAppointments.length > 0 ? (
-          filteredAppointments.map((appointment) => (
-            <View key={appointment.id} style={styles.tableRow}>
-              <Text style={[styles.cell, { flex: 2 }]}>{appointment.fullName}</Text>
-              <Text style={[styles.cell, { flex: 1 }]}>{appointment.hospitalName}</Text>
-              <Text style={styles.cell}>{new Date(appointment.app_date).toLocaleDateString()}</Text>
-              <View style={[styles.cell, styles.actionCell]}>
-                <TouchableOpacity onPress={() => handleEdit(appointment)} style={styles.actionButton}>
-                  <Text style={styles.actionText}>Edit</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => handleDelete(appointment.id)} style={[styles.actionButton, { backgroundColor: '#f44336' }]}>
-                  <Text style={styles.actionText}>Delete</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))
-        ) : (
-          <Text style={styles.noDataText}>No appointments found.</Text>
-        )}
+  filteredAppointments.map((appointment) => (
+    <View key={appointment.id} style={styles.tableRow}>
+      <Text style={styles.cell}>{appointment.cardNumber ?? "NA"}</Text>
+      <Text style={[styles.cell, { flex: 2 }]}>{appointment.fullName}</Text>
+      <Text style={[styles.cell, { flex: 1 }]}>{appointment.hospitalName}</Text>
+      <Text style={styles.cell}>{new Date(appointment.app_date).toLocaleDateString()}</Text>
+      <View style={[styles.cell, styles.actionCell]}>
+        <TouchableOpacity onPress={() => handleEdit(appointment)} style={styles.actionButton}>
+          <Text style={styles.actionText}>Edit</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => handleDelete(appointment.id)} style={[styles.actionButton, { backgroundColor: '#f44336' }]}>
+          <Text style={styles.actionText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  ))
+) : (
+  <Text style={styles.noDataText}>{t.noData}</Text>
+)}
       </ScrollView>
 
        {/* Edit Modal */}
