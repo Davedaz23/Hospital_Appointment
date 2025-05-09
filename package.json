@@ -45,6 +45,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@react-native-community/cli": "^18.0.0",
     "babel-loader": "^10.0.0",
     "webpack": "^5.99.5",
     "webpack-cli": "^6.0.1",
