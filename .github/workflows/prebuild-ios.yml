@@ -31,11 +31,11 @@ jobs:
             echo "✅ GH_PAT is set."
           fi
 
-
       - name: Commit & Push ios folder
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Add ios folder via CI
           file_pattern: ios/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          commit_user_name: Expo Prebuild Bot
+          commit_user_email: action@github.com
+          token: ${{ secrets.GH_PAT }}
