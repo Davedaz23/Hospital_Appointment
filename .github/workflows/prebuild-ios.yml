@@ -8,6 +8,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v3
+
       - uses: actions/setup-node@v3
         with:
           node-version: 18
@@ -21,7 +22,7 @@ jobs:
       - name: Run prebuild for iOS
         run: npx expo prebuild --platform ios
 
-           - name: Push ios folder to repo
+      - name: Push ios folder to repo
         env:
           TOKEN: ${{ secrets.GH_PAT }}
         run: |
@@ -31,4 +32,3 @@ jobs:
           git add ios
           git commit -m "Add ios folder via CI" || echo "No changes to commit"
           git push origin main
-
