@@ -22,15 +22,10 @@ jobs:
       - name: Run prebuild for iOS
         run: npx expo prebuild --platform ios
 
-      - name: Push ios folder to repo
+      - name: Commit & Push ios folder
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Add ios folder via CI
+          file_pattern: ios/*
         env:
-          TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          git config user.name "Expo Prebuild Bot"
-          git config user.email "action@github.com"
-          git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
-          git fetch origin main
-          git add ios
-          git commit -m "Add ios folder via CI" || echo "No changes to commit"
-          git push origin main --force
-
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
