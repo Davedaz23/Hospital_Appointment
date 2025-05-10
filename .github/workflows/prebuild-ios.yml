@@ -29,6 +29,8 @@ jobs:
           git config user.name "Expo Prebuild Bot"
           git config user.email "action@github.com"
           git remote set-url origin https://x-access-token:${TOKEN}@github.com/${{ github.repository }}
+          git fetch origin main
           git add ios
           git commit -m "Add ios folder via CI" || echo "No changes to commit"
-          git push origin main
+          git push origin main --force
+
