@@ -22,10 +22,15 @@ jobs:
       - name: Run prebuild for iOS
         run: npx expo prebuild --platform ios
 
-      - name: Debug Git Remote and Config
+      - name: Check if GH_PAT secret exists
         run: |
-          git remote -v
-          git config --list
+          if [ -z "${{ secrets.GH_PAT }}" ]; then
+            echo "❌ GH_PAT is NOT set."
+            exit 1
+          else
+            echo "✅ GH_PAT is set."
+          fi
+
 
       - name: Commit & Push ios folder
         uses: stefanzweifel/git-auto-commit-action@v5
