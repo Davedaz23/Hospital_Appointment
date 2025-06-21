@@ -1,7 +1,10 @@
-import React from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Image, ImageBackground, ScrollView, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import FooterMenu from './FooterMenu';
+import { Ionicons } from '@expo/vector-icons';
+import { LanguageContext } from './LanguageContext';
+import React, { useState, useEffect, useContext } from 'react';
+import db from '../config/firestoreConfig';
+import { collection, getDocs } from 'firebase/firestore';
 
 const hospitalImages = {
   'Bethzatha-General-Hospital': require('../assets/Hospitals/Bethzatha-General-Hospital.jpg'),
@@ -14,56 +17,119 @@ const hospitalImages = {
 };
 
 const Hospitals = () => {
-  const navigation = useNavigation(); // Get navigation object
+  const navigation = useNavigation();
+  const { language } = useContext(LanguageContext);
 
-  const hospitals = [
-    { id: 1, name: "Bethzatha General Hospital", role: "Founded in May 2007, by the Kadisco group, the hospital is known for its objectives to secure the health of the society.", img: "Bethzatha-General-Hospital" },
-    { id: 2, name: "Hayat Hospital", role: "A Norwegian facility run and staffed by highly experienced international and Ethiopian medical professionals.", img: "Hayat-Hospital" },
-    { id: 3, name: "Kadisco General Hospital", role: "Established in September 1996, St Gabriel General Hospital is the first private hospital of its kind.", img: "Kadisco-General-Hospital" },
-    { id: 4, name: "Landmark General Hospital", role: "Founded in 2008, the hospital is known for providing high-quality medical care services to the people of the region.", img: "Landmark-General-Hospital" },
-    { id: 5, name: "Samaritan Surgical Center", role: "Known for providing the highest standard of care and first-class treatment, the hospital is known for striving to improve the healthcare service in Ethiopia.", img: "Samaritan-Surgical-Center" },
-    { id: 6, name: "Nordic Medical Centre", role: "A Norwegian facility run and staffed by highly experienced international and Ethiopian medical professionals, the hospital delivers high-quality medical services 24/7 with a focus on family and emergency medicine.", img: "Nordic-Medical-Centre" },
-    { id: 7, name: "Myungsung Christian Medical Center", role: "Surgical Care, Endoscopic & Laparoscopic Surgery, Anesthesia, Ophthalmology.", img: "Myungsung-Christian-Medical-Center" },
-  ];
+  const translations = {
+    english: {
+      topHospitals: "Top Hospitals",
+      registerNewHospital: "Register New Hospital",
+      hospital1: "Bethzatha General Hospital",
+      hospital1Desc: "Founded in May 2007 by the Kadisco group...",
+      hospital2: "Hayat Hospital",
+      hospital2Desc: "A Norwegian facility run by experienced medical professionals.",
+      hospital3: "Kadisco General Hospital",
+      hospital3Desc: "Established in September 1996, the first private hospital of its kind.",
+      hospital4: "Landmark General Hospital",
+      hospital4Desc: "Known for high-quality medical care services.",
+      hospital5: "Samaritan Surgical Center",
+      hospital5Desc: "Striving to improve healthcare service in Ethiopia.",
+      hospital6: "Nordic Medical Centre",
+      hospital6Desc: "Delivers high-quality medical services 24/7.",
+      hospital7: "Myungsung Christian Medical Center",
+      hospital7Desc: "Surgical Care, Endoscopic & Laparoscopic Surgery.",
+    },
+    amharic: {
+      topHospitals: "ከፍተኛ ሆስፒታሎች",
+      registerNewHospital: "አዲስ ሆስፒታል ይመዝገቡ",
+      hospital1: "ቤተ ዘታ ጄኔራል ሆስፒታል",
+      hospital1Desc: "በመጋቢት 2007 በካዲስኮ ቡድን የተመሰረተው...",
+      // Add other translations here...
+    },
+  };
+
+  const t = translations[language];
+
+  const [firebaseHospitals, setFirebaseHospitals] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredHospitals, setFilteredHospitals] = useState([]);
+
+  useEffect(() => {
+    const fetchFirebaseHospitals = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'hospitals'));
+        const fetchedHospitals = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          name: doc.data().name,
+          role: doc.data().description,
+          img: doc.data().photo,
+        }));
+        setFirebaseHospitals(fetchedHospitals);
+      } catch (error) {
+        console.error('Error fetching hospitals from Firestore:', error);
+      }
+    };
+    fetchFirebaseHospitals();
+  }, []);
+
+  useEffect(() => {
+    const hospitals = [
+      { id: 1, name: t.hospital1, role: t.hospital1Desc, img: "Bethzatha-General-Hospital" },
+      { id: 2, name: t.hospital2, role: t.hospital2Desc, img: "Hayat-Hospital" },
+      { id: 3, name: t.hospital3, role: t.hospital3Desc, img: "Kadisco-General-Hospital" },
+      { id: 4, name: t.hospital4, role: t.hospital4Desc, img: "Landmark-General-Hospital" },
+      { id: 5, name: t.hospital5, role: t.hospital5Desc, img: "Samaritan-Surgical-Center" },
+      { id: 6, name: t.hospital6, role: t.hospital6Desc, img: "Nordic-Medical-Centre" },
+      { id: 7, name: t.hospital7, role: t.hospital7Desc, img: "Myungsung-Christian-Medical-Center" },
+      ...firebaseHospitals,
+    ];
+
+    const filtered = hospitals.filter(hospital =>
+      hospital.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredHospitals(filtered);
+  }, [searchQuery, firebaseHospitals]);
 
   return (
     <View style={styles.container}>
-      {/* Scrollable Content */}
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={true}
-      >
-        {/* Hospitals Section */}
-        <View style={[styles.section, styles.lightBackground]}>
-          <Text style={styles.sectionTitle}>Top Hospitals</Text>
-          {hospitals.map((hospital) => (
-            <View key={hospital.id} style={styles.hospitalContainer}>
-              <Image
-                source={hospitalImages[hospital.img]}
-                style={styles.hospitalImage}
-              />
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Hospitals</Text>
+      </View>
+
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search Hospitals..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+        <TouchableOpacity style={styles.searchButton}>
+          <Ionicons name="search" size={24} color="white" />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t.topHospitals}</Text>
+          {filteredHospitals.map(hospital => (
+            <TouchableOpacity
+              key={hospital.id}
+              style={styles.hospitalContainer}
+              onPress={() =>
+                navigation.navigate('Appointment', {
+                  selectedHospital: hospital,
+                })
+              }
+            >
+              <Image source={hospitalImages[hospital.img] || { uri: hospital.img }} style={styles.hospitalImage} />
               <View style={styles.hospitalTextContainer}>
                 <Text style={styles.hospitalName}>{hospital.name}</Text>
                 <Text style={styles.hospitalRole}>{hospital.role}</Text>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
       </ScrollView>
-      
-      {/* Button to navigate to Hospital Registration */}
-      <TouchableOpacity
-        style={styles.registrationButton}
-        onPress={() => navigation.navigate('HospitalRegistration')}
-      >
-        <Text style={styles.buttonText}>Register New Hospital</Text>
-      </TouchableOpacity>
-
-      {/* Fixed Footer Menu */}
-      <View style={styles.footer}>
-        <FooterMenu />
-      </View>
     </View>
   );
 };
@@ -72,34 +138,44 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     position: "relative",
+    backgroundColor: 'transparent',
   },
-  registrationButton: {
-    position: 'absolute',
-    bottom: 70,
-    left: 20,
-    right: 20,
-    backgroundColor: '#007BFF',
-    padding: 15,
-    borderRadius: 5,
-    alignItems: 'center',
-    elevation: 3,
+  header: {
+    backgroundColor: '#2196F3',
+    padding: 40,
+    
   },
-  buttonText: {
+  headerTitle: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
-  scrollView: {
+  searchContainer: {
+    flexDirection: 'row',
+    padding: 10,
+    backgroundColor: '##2196F3',
+    borderRadius: 5,
+    margin: 10,
+  },
+  searchInput: {
     flex: 1,
-    marginBottom: 60,
+    padding: 10,
+    borderRadius: 5,
+    backgroundColor: '#fff',
+    marginRight: 10,
+    borderColor: '#ccc',
+    borderWidth: 1,
   },
-  scrollContainer: {
-    flexGrow: 1,
-    padding: 16,
-    paddingBottom: 80,
+  searchButton: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '##2196F3',
+    padding: 10,
+    borderRadius: 5,
   },
   section: {
-    marginBottom: 24,
+    padding: 16,
   },
   sectionTitle: {
     fontSize: 24,
@@ -109,10 +185,12 @@ const styles = StyleSheet.create({
   },
   hospitalContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
-    backgroundColor: '#fff',
+  },
+  hospitalImage: {
+    width: 80,
+    height: 80,
     borderRadius: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -125,34 +203,12 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   hospitalName: {
-    fontSize: 12,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   hospitalRole: {
-    fontSize: 10,
-    color: '#663',
-    maxHeight: 150,
-    overflow: 'scroll',
-  },
-  hospitalImage: {
-    width: 80,
-    maxHeight: 80,
-    borderRadius: 8,
-  },
-  lightBackground: {
-    backgroundColor: '#f8f9fa',
-    padding: 16,
-    borderRadius: 8,
-  },
-  footer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 60,
-    backgroundColor: "white",
-    borderTopWidth: 1,
-    borderTopColor: "#ccc",
+    fontSize: 14,
+    color: '#666',
   },
 });
 

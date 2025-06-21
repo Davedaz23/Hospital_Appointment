@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { 
   View, Text, TextInput, StyleSheet, Alert, TouchableOpacity, 
-  ImageBackground, ActivityIndicator, Image 
+  ImageBackground, ActivityIndicator, Image, Pressable 
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import PhoneInput from 'react-native-phone-input';
@@ -9,36 +9,55 @@ import db from '../config/firestoreConfig';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { LanguageContext } from './LanguageContext';
 
 const Login = () => {
   const navigation = useNavigation();
+  const { language, changeLanguage } = useContext(LanguageContext);
   const [loginMethod, setLoginMethod] = useState("phone");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");   
   const [loading, setLoading] = useState(true);
   const phoneInputRef = useRef(null);
-  const [language, setLanguage] = useState("English");
   const [isLanguageDropdownVisible, setIsLanguageDropdownVisible] = useState(false);
 
   // Translation object
   const translations = {
-    English: {
+    english: {
       login: "Login",
       continue: "Continue",
       continueWithEmail: "Continue with email",
       continueWithPhone: "Continue with phone",
       terms: "Terms and conditions",
-      selectLanguage: "English"
+      selectLanguage: "English",
+      error: "Error",
+      phoneRequired: "Please enter your phone number",
+      emailRequired: "Please enter your email",
+      inactiveUser: "Inactive User",
+      verifyAccount: "You are not active. Please verify your account.",
+      registrationSuccess: "Registration Successful",
+      welcome: "Welcome!",
+      loginError: "An error occurred during login"
     },
-    Amharic: {
-      login: "ግባ",
-      continue: "ቀጥል",
+    amharic: {
+      login: "ይግቡ",
+      continue: "ይቀጥሉ",
       continueWithEmail: "በኢሜይል ይቀጥሉ",
       continueWithPhone: "በስልክ ቁጥር ይቀጥሉ",
       terms: "ውሎች እና ሁኔታዎች",
-      selectLanguage: "አማርኛ"
+      selectLanguage: "አማርኛ",
+      error: "ስህተት",
+      phoneRequired: "እባክዎ ስልክ ቁጥርዎን ያስገቡ",
+      emailRequired: "እባክዎ ኢሜይል አድራሻዎን ያስገቡ",
+      inactiveUser: "ንቁ ያልሆነ ተጠቃሚ",
+      verifyAccount: "ንቁ አይደለህም። እባክዎ መለያዎን ያረጋግጡ።",
+      registrationSuccess: "ምዝገባ ተሳክቷል",
+      welcome: "እንኳን ደህና መጡ!",
+      loginError: "በመግቢያ ጊዜ ስህተት ተከስቷል"
     }
   };
+
+  const t = translations[language];
 
   // Check stored phone number when the component is focused
   useFocusEffect(
@@ -68,11 +87,11 @@ const Login = () => {
 
   const handleLogin = async () => {
     if (loginMethod === "phone" && !phoneNumber) {
-      Alert.alert("Error", "Please enter your phone number.");
+      Alert.alert(t.error, t.phoneRequired);
       return;
     }
     if (loginMethod === "email" && !email) {
-      Alert.alert("Error", "Please enter your email.");
+      Alert.alert(t.error, t.emailRequired);
       return;
     }
   
@@ -88,7 +107,7 @@ const Login = () => {
           const otp = generateOTP(); // Generate OTP
           await setDoc(userDocRef, { ...userData, otp }, { merge: true }); // Store OTP in Firestore
   
-          Alert.alert("Inactive User", "You are not active. Please verify your account.");
+          Alert.alert(t.inactiveUser, t.verifyAccount);
           navigation.navigate("OtpScreen", { identifier, otp }); // Navigate to OTP screen
           return;
         }
@@ -118,12 +137,12 @@ const Login = () => {
           await AsyncStorage.setItem('userPhone', identifier);
         }
   
-        Alert.alert("Registration Successful", "Welcome!");
+        Alert.alert(t.registrationSuccess, t.welcome);
         navigation.navigate("OtpScreen", { identifier, otp }); // Pass OTP to OTP screen
       }
     } catch (error) {
       console.error("Login Error:", error);
-      Alert.alert("Error", error.message || "An error occurred during login.");
+      Alert.alert(t.error, error.message || t.loginError);
     }
   };
   
@@ -132,13 +151,13 @@ const Login = () => {
     return Math.floor(100000 + Math.random() * 900000).toString(); // Generates a 6-digit OTP
   };
 
-  const toggleLanguageDropdown = () => {
-    setIsLanguageDropdownVisible(!isLanguageDropdownVisible);
+  const handleLanguageChange = (lang) => {
+    changeLanguage(lang);
+    setIsLanguageDropdownVisible(false); // Close dropdown after selection
   };
 
-  const changeLanguage = (lang) => {
-    setLanguage(lang);
-    setIsLanguageDropdownVisible(false);
+  const toggleLanguageDropdown = () => {
+    setIsLanguageDropdownVisible(!isLanguageDropdownVisible);
   };
 
   if (loading) {
@@ -151,99 +170,102 @@ const Login = () => {
 
   return (
     <ImageBackground 
-      source={require('../assets/background.png')} 
-      style={styles.container}
-    >
-      {/* Language Dropdown */}
-      <View style={styles.languageDropdownContainer}>
-        <TouchableOpacity 
-          onPress={toggleLanguageDropdown} 
-          style={styles.languageButton}
-        >
-          <Text style={styles.languageButtonText}>{translations[language].selectLanguage}</Text>
-          <Ionicons 
-            name={isLanguageDropdownVisible ? "chevron-up" : "chevron-down"} 
-            size={16} 
-            color="black" 
-          />
-        </TouchableOpacity>
+        source={require('../assets/background.png')} 
+        style={styles.container}
+      >
+    <Pressable style={styles.container} onPress={() => setIsLanguageDropdownVisible(false)}>
+      
+        {/* Language Dropdown */}
+        <View style={styles.languageDropdownContainer}>
+          <TouchableOpacity 
+            onPress={toggleLanguageDropdown} 
+            style={styles.languageButton}
+          >
+            <Text style={styles.languageButtonText}>{t.selectLanguage}</Text>
+            <Ionicons 
+              name={isLanguageDropdownVisible ? "chevron-up" : "chevron-down"} 
+              size={16} 
+              color="black" 
+            />
+          </TouchableOpacity>
 
-        {isLanguageDropdownVisible && (
-          <View style={styles.languageDropdownMenu}>
-            <TouchableOpacity 
-              onPress={() => changeLanguage("English")} 
-              style={styles.languageOption}
-            >
-              <Text style={styles.languageOptionText}>English</Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              onPress={() => changeLanguage("Amharic")} 
-              style={styles.languageOption}
-            >
-              <Text style={styles.languageOptionText}>አማርኛ</Text>
-            </TouchableOpacity>
+          {isLanguageDropdownVisible && (
+            <View style={styles.languageDropdownMenu}>
+              <TouchableOpacity 
+                onPress={() => handleLanguageChange("english")} 
+                style={styles.languageOption}
+              >
+                <Text style={styles.languageOptionText}>English</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={() => handleLanguageChange("amharic")} 
+                style={styles.languageOption}
+              >
+                <Text style={styles.languageOptionText}>አማርኛ</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+
+        <Image 
+          source={require('../assets/logo.png')} 
+          style={styles.logo}
+        />
+        
+        <Text style={styles.title}>{t.welcome}</Text>
+
+        {/* Phone Number Input */}
+        {loginMethod === "phone" && (
+          <View style={styles.phoneInputContainer}>
+            <PhoneInput
+              ref={phoneInputRef}
+              initialCountry="et"
+              onChangePhoneNumber={setPhoneNumber}
+              style={styles.input}
+              textStyle={styles.phoneInputText}
+            />
           </View>
         )}
-      </View>
 
-      <Image 
-        source={require('../assets/logo.png')} 
-        style={styles.logo}
-      />
-      
-      <Text style={styles.title}>{translations[language].login}</Text>
+        {/* Email Input */}
+        {loginMethod === "email" && (
+          <>
+            <Text style={styles.label}>Email Address *</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="example@email.com"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+            />
+          </>
+        )}
 
-      {/* Phone Number Input */}
-      {loginMethod === "phone" && (
-        <View style={styles.phoneInputContainer}>
-          <PhoneInput
-            ref={phoneInputRef}
-            initialCountry="et"
-            onChangePhoneNumber={setPhoneNumber}
-            style={styles.input}
-            textStyle={styles.phoneInputText}
-          />
+        {/* Custom Button */}
+        <TouchableOpacity style={styles.continueButton} onPress={handleLogin}>
+          <Text style={styles.continueButtonText}>{t.continue}</Text>
+        </TouchableOpacity>
+
+        {/* "or" with horizontal lines */}
+        <View style={styles.orContainer}>
+          <View style={styles.line} />
+          <Text style={styles.orText}>or</Text>
+          <View style={styles.line} />
         </View>
-      )}
 
-      {/* Email Input */}
-      {loginMethod === "email" && (
-        <>
-          <Text style={styles.label}>Email Address *</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="example@email.com"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-          />
-        </>
-      )}
+        <TouchableOpacity 
+          onPress={() => setLoginMethod(loginMethod === "phone" ? "email" : "phone")} 
+          style={styles.emailButton}
+        >
+          <Text style={styles.emailButtonText}>
+            {loginMethod === "phone" 
+              ? t.continueWithEmail 
+              : t.continueWithPhone}
+          </Text>
+        </TouchableOpacity>
 
-      {/* Custom Button */}
-      <TouchableOpacity style={styles.continueButton} onPress={handleLogin}>
-        <Text style={styles.continueButtonText}>{translations[language].continue}</Text>
-      </TouchableOpacity>
-
-      {/* "or" with horizontal lines */}
-      <View style={styles.orContainer}>
-        <View style={styles.line} />
-        <Text style={styles.orText}>or</Text>
-        <View style={styles.line} />
-      </View>
-
-      <TouchableOpacity 
-        onPress={() => setLoginMethod(loginMethod === "phone" ? "email" : "phone")} 
-        style={styles.emailButton}
-      >
-        <Text style={styles.emailButtonText}>
-          {loginMethod === "phone" 
-            ? translations[language].continueWithEmail 
-            : translations[language].continueWithPhone}
-        </Text>
-      </TouchableOpacity>
-
-      <Text style={styles.termsText}>{translations[language].terms}</Text>
+        <Text style={styles.termsText}>{t.terms}</Text>
+    </Pressable>
     </ImageBackground>
   );
 };
@@ -332,7 +354,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#6c757d",
   },
-  // New styles for language dropdown
   languageDropdownContainer: {
     position: 'absolute',
     top: 20,
