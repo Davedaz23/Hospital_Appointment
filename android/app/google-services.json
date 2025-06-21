@@ -1,26 +1,36 @@
 {
   "project_info": {
-    "project_number": "617055937715",
-    "project_id": "care4you1-62cc7",
-    "storage_bucket": "care4you1-62cc7.firebasestorage.app"
+    "project_number": "667659395686",
+    "project_id": "ssms-28a95",
+    "storage_bucket": "ssms-28a95.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:617055937715:android:4b08984ae563213174bcc6",
+        "mobilesdk_app_id": "1:667659395686:android:5b2ad6c94e10f2a2b6c3a7",
         "android_client_info": {
-          "package_name": "com.anonymous.care4you1"
+          "package_name": "com.medicalappointmentapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "667659395686-bd9jgva57dm53tgf9nvnrse9int3jirf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyD2YieupthdsqBItdMd0lFkYKlVxdzKT8I"
+          "current_key": "AIzaSyAf4UwOrRbshGi907MRF1k_k_fZNy9gPm4"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "667659395686-bd9jgva57dm53tgf9nvnrse9int3jirf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
