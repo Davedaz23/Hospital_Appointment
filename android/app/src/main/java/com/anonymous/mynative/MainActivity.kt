@@ -1,4 +1,4 @@
-package com.anonymous.mynative
+package com.medicalappointmentapp
 
 import android.os.Build
 import android.os.Bundle

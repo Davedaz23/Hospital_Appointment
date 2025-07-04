@@ -27,7 +27,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>com.anonymous.mynative</string>
+          <string>com.medicalappointmentapp</string>
         </array>
       </dict>
     </array>

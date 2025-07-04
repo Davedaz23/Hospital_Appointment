@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.anonymous.mynative'
+    namespace 'com.medicalappointmentapp'
     defaultConfig {
-        applicationId 'com.anonymous.mynative'
+        applicationId 'com.medicalappointmentapp'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

@@ -1,4 +1,4 @@
-package com.care4you.mynative
+package com.medicalappointmentapp
 
 import android.app.Application
 import android.content.res.Configuration
