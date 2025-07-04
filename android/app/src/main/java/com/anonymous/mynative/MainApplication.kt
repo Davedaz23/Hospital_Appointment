@@ -1,4 +1,4 @@
-package com.anonymous.mynative
+package com.care4you.mynative
 
 import android.app.Application
 import android.content.res.Configuration

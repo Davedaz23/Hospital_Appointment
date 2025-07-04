@@ -1,5 +1,5 @@
 {
-  "expo": {
+   "expo": {
     "name": "my-native",
     "slug": "my-native",
     "version": "1.0.0",
@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.mynative",
+      "bundleIdentifier": "com.care4you.mynative",  
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -25,7 +25,7 @@
         "foregroundImage": "./src/assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.mynative"
+      "package": "com.care4you.mynative"  
     },
     "web": {
       "favicon": "./src/assets/favicon.png"
