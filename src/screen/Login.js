@@ -4,7 +4,6 @@ import {
   ImageBackground, ActivityIndicator, Image, Pressable 
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import PhoneInput from 'react-native-phone-number-input';
 import db from '../config/firestoreConfig'; 
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -18,7 +17,6 @@ const Login = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");   
   const [loading, setLoading] = useState(true);
-  const phoneInputRef = useRef(null);
   const [isLanguageDropdownVisible, setIsLanguageDropdownVisible] = useState(false);
 
   // Translation object
