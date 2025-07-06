@@ -1,12 +1,20 @@
 {
-   "expo": {
+  "expo": {
     "name": "my-native",
     "slug": "my-native",
-    "version": "1.0.0",
+    "version": "1.0.25",
     "orientation": "portrait",
     "icon": "./src/assets/icon.png",
     "userInterfaceStyle": "light",
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "runtimeVersion": "1.0.0",
+    "sdkVersion": "52.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/570fe10c-a217-4e2f-9f81-c7ca732de5ec"
+    },
     "newArchEnabled": true,
     "splash": {
       "image": "./src/assets/splash-icon.png",
@@ -16,6 +24,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.medicalappointmentapp",
+      "buildNumber": "1.0.0",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -25,7 +34,8 @@
         "foregroundImage": "./src/assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.medicalappointmentapp"
+      "package": "com.medicalappointmentapp",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./src/assets/favicon.png"

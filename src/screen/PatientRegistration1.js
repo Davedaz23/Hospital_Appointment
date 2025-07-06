@@ -155,7 +155,7 @@ const PatientRegistration = () => {
 
           <View style={styles.content}>
             <View style={styles.imageContainer}>
-              <Image source={require('../assets/logo.png')} style={styles.image} />
+              <Image source={require('../../assets/logo.png')} style={styles.image} />
             </View>
 
             <Text style={styles.title}>{translations[language].welcome}</Text>

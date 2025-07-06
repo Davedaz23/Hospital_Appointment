@@ -168,7 +168,7 @@ const Login = () => {
 
   return (
     <ImageBackground 
-        source={require('../assets/background.png')} 
+        sou     rce={require('../../assets/images/background.png')}
         style={styles.container}
       >
     <Pressable style={styles.container} onPress={() => setIsLanguageDropdownVisible(false)}>
@@ -206,7 +206,7 @@ const Login = () => {
         </View>
 
         <Image 
-          source={require('../assets/logo.png')} 
+          source={require('../../assets/logo.png')} 
           style={styles.logo}
         />
         
