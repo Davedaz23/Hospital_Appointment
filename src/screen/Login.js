@@ -4,7 +4,6 @@ import {
   ImageBackground, ActivityIndicator, Image, Pressable 
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import PhoneInput from 'react-native-phone-input';
 import db from '../config/firestoreConfig'; 
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -18,7 +17,6 @@ const Login = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");   
   const [loading, setLoading] = useState(true);
-  const phoneInputRef = useRef(null);
   const [isLanguageDropdownVisible, setIsLanguageDropdownVisible] = useState(false);
 
   // Translation object
@@ -216,16 +214,19 @@ const Login = () => {
 
         {/* Phone Number Input */}
         {loginMethod === "phone" && (
-          <View style={styles.phoneInputContainer}>
-            <PhoneInput
-              ref={phoneInputRef}
-              initialCountry="et"
-              onChangePhoneNumber={setPhoneNumber}
-              style={styles.input}
-              textStyle={styles.phoneInputText}
-            />
-          </View>
-        )}
+  <View style={styles.phoneInputContainer}>
+    <PhoneInput
+      defaultValue={phoneNumber}
+      defaultCode="ET"
+      layout="first"
+      onChangeFormattedText={setPhoneNumber}
+      containerStyle={styles.phoneInputContainerStyle}
+      textContainerStyle={styles.phoneInputTextContainer}
+      textInputStyle={styles.phoneInputText}
+      codeTextStyle={styles.phoneInputCodeText}
+    />
+  </View>
+)}
 
         {/* Email Input */}
         {loginMethod === "email" && (
@@ -390,6 +391,26 @@ const styles = StyleSheet.create({
   },
   languageOptionText: {
     fontSize: 14,
+  },
+  phoneInputContainer: {
+    marginBottom: 20,
+    width: '100%',
+  },
+  phoneInputContainerStyle: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+  },
+  phoneInputTextContainer: {
+    backgroundColor: 'transparent',
+  },
+  phoneInputText: {
+    height: 50,
+    fontSize: 16,
+  },
+  phoneInputCodeText: {
+    fontSize: 16,
   },
 });
 
