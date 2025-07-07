@@ -1,25 +1,38 @@
 {
+  "cli": {
+    "version": ">=16.13.3",
+    "appVersionSource": "local"
+  },
   "build": {
     "production": {
-      "ios": {
-        "env": {
-          "GOOGLE_SERVICES_PLIST": "./GoogleService-Info.plist"
-        }
-      },
       "android": {
+        "buildType": "app-bundle",
+        "gradleCommand": ":app:bundleRelease",
+        "image": "latest",
+        "credentialsSource": "remote",
+        "withoutCredentials": false,
+        "autoIncrement": "version",
         "env": {
-          "GOOGLE_SERVICES_JSON": "./android/app/google-services.json"
+          "GOOGLE_SERVICES_JSON": "@google-services-json"
         }
       }
     },
-    "ios-simulator": {
-      "extends": "production",
-      "ios": {
-        "simulator": true
+    "development": {
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug",
+        "developmentClient": true,
+        "image": "latest"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./service-account-key.json",
+        "track": "internal",
+        "releaseStatus": "draft"
+      }
+    }
   }
 }
