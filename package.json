@@ -79,7 +79,7 @@
       "package": "com.medicalappointmentapp",
       "versionCode": 1,
       "adaptiveIcon": {
-        "foregroundImage": "./src/assets/adaptive-icon.png",
+        "foregroundImage": "../src/assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "permissions": [

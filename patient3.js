@@ -174,7 +174,7 @@ const PatientRegistration = () => {
   };
 
   return (
-    <ImageBackground source={require('./assets/background.png')} style={styles.backgroundImage}>
+    <ImageBackground source={require('../assets/background.png')} style={styles.backgroundImage}>
       <ScrollView style={styles.container}>
         {/* Language Dropdown */}
         <View style={styles.languageDropdownContainer}>
@@ -196,7 +196,7 @@ const PatientRegistration = () => {
         </View>
            <View style={styles.imageContainer}>
             <Image
-              source={require('./assets/logo.png')} // Path to your logo image
+              source={require('../assets/logo.png')} // Path to your logo image
               style={styles.image}
             />
           </View> 

@@ -2,13 +2,15 @@
   "expo": {
     "name": "my-native",
     "slug": "my-native",
-    "version": "1.0.30",
+    "version": "1.0.34",
     "orientation": "portrait",
     "icon": "./src/assets/icon.png",
     "userInterfaceStyle": "light",
     "platforms": [
       "ios",
-      "android"
+      "android",
+      "web"
+
     ],
     "runtimeVersion": "1.0.0",
     "sdkVersion": "52.0.0",

@@ -112,7 +112,7 @@ const PatientRegistration = () => {
   };
 
   return (
-    <ImageBackground source={require('./assets/background.png')} style={styles.backgroundImage}>
+    <ImageBackground source={require('../assets/background.png')} style={styles.backgroundImage}>
       <ScrollView style={styles.container}>
            <View style={styles.imageContainer}>
             <Image
