@@ -16,14 +16,35 @@
       "supportsTablet": true
     },
     "android": {
+      "permissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "INTERNET",
+        "CAMERA",
+        "ACCESS_FINE_LOCATION"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      
+      "edgeToEdgeEnabled": true,
+      "package": "com.davidrudisha.hospitalappointment"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2ca8ee04-db13-4cdb-b8c8-cd0d606d54db"
+      }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow access to your photos to select a profile picture."
+        }
+      ]
+    ]
   }
 }
