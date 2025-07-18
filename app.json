@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -18,16 +17,16 @@
     "android": {
       "permissions": [
         "android.permission.READ_EXTERNAL_STORAGE",
-        "INTERNET",
-        "CAMERA",
-        "ACCESS_FINE_LOCATION"
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.INTERNET"
       ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      
-      "edgeToEdgeEnabled": true,
       "package": "com.davidrudisha.hospitalappointment"
     },
     "web": {
