@@ -9,8 +9,11 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { LanguageContext } from './LanguageContext';
+<<<<<<< HEAD
 import IntlPhoneInput from 'react-native-intl-phone-input';
 import { Asset } from 'expo-asset';
+=======
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
 
 const Login = () => {
   const navigation = useNavigation();
@@ -169,6 +172,7 @@ const Login = () => {
   }
 
   return (
+<<<<<<< HEAD
     // <ImageBackground 
     //     source={require('../assets/bg.png')}
     //     style={styles.container}
@@ -176,6 +180,12 @@ const Login = () => {
       <ImageBackground 
   source={{ uri: Asset.fromModule(require('../assets/bg.png')).uri }}
   style={styles.container}>
+=======
+    <ImageBackground 
+        source={require('../assets/background.png')}
+        style={styles.container}
+      >
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
     <Pressable style={styles.container} onPress={() => setIsLanguageDropdownVisible(false)}>
       
         {/* Language Dropdown */}
@@ -220,6 +230,7 @@ const Login = () => {
         {/* Phone Number Input */}
         {loginMethod === "phone" && (
   <View style={styles.phoneInputContainer}>
+<<<<<<< HEAD
     <IntlPhoneInput
       defaultCountry="ET"
        phoneNumber={phoneNumber} // Use `phoneNumber`, not `value`
@@ -232,11 +243,25 @@ const Login = () => {
       dialCodeTextStyle={styles.phoneInputCodeText}
       phoneInputStyle={styles.phoneInputText}
       placeholder="911 123 456"
+=======
+    <PhoneInput
+      defaultValue={phoneNumber}
+      defaultCode="ET"
+      layout="first"
+      onChangeFormattedText={setPhoneNumber}
+      containerStyle={styles.phoneInputContainerStyle}
+      textContainerStyle={styles.phoneInputTextContainer}
+      textInputStyle={styles.phoneInputText}
+      codeTextStyle={styles.phoneInputCodeText}
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
     />
   </View>
 )}
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
         {/* Email Input */}
         {loginMethod === "email" && (
           <>

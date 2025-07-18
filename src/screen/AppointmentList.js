@@ -281,7 +281,11 @@ const AppointmentList = () => {
         />
       )}
 
+<<<<<<< HEAD
       <FooterMenu  />
+=======
+      <FooterMenu />
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
     </View>
   );
 };

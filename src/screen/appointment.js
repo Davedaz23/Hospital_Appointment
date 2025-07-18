@@ -486,8 +486,14 @@ const Appointment = () => {
             <Button title={t.submit} onPress={handleSubmit} />
           </ScrollView>
 
+<<<<<<< HEAD
             <FooterMenu />
         
+=======
+          <View style={styles.footer}>
+            <FooterMenu />
+          </View>
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
         </View>
       </View>
     </TouchableWithoutFeedback>
@@ -700,7 +706,20 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     fontSize: 16,
   },
+<<<<<<< HEAD
   
+=======
+  footer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 60,
+    backgroundColor: "white",
+    borderTopWidth: 1,
+    borderTopColor: "#ccc",
+  },
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
 });
 
 export default Appointment;

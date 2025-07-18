@@ -1,6 +1,9 @@
 
 import React, { useState, useEffect, useContext } from 'react';
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
 import {
   View,
   Text,
@@ -35,6 +38,10 @@ const db = getFirestore(app);
 const Profile = () => {
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [name, setName] = useState('');
@@ -282,6 +289,10 @@ useEffect(() => {
         <LogoutButton isDarkMode={isDarkMode} styles={styles} />
       </View>
 
+<<<<<<< HEAD
+=======
+      <FooterMenu />
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
 
       {/* Edit Modal */}
       <Modal animationType="slide" transparent={true} visible={modalVisible}>
@@ -322,7 +333,10 @@ useEffect(() => {
           </View>
         </View>
       </Modal>
+<<<<<<< HEAD
       <FooterMenu  />
+=======
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
     </View>
   );
 };
@@ -481,6 +495,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 5,
   },
+<<<<<<< HEAD
   footer: {
     position: "absolute",
     left: 0,
@@ -491,6 +506,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#ccc",
   },
+=======
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
   logout: {
     marginBottom: 20,
   },

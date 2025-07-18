@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from "react";
+<<<<<<< HEAD
 import { View, Text, FlatList, StyleSheet, Image, Modal, TextInput, Alert } from "react-native";
 import { Button } from "react-native-paper"; // Expo paper button
 import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
 import db from "../config/firestoreConfig";
 import { Picker } from '@react-native-picker/picker'; // Expo picker
 import { Ionicons, FontAwesome } from "@expo/vector-icons"; // Expo icons
+=======
+import { View, Text, FlatList, StyleSheet, Image, Modal, TextInput, Button, Alert } from "react-native";
+import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
+import db from "../config/firestoreConfig";
+import RNPickerSelect from "react-native-picker-select"; // Import the picker package
+import { Ionicons, FontAwesome } from "react-native-vector-icons"; // Import icons package
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -40,7 +48,11 @@ const AdminDashboard = () => {
     try {
       const userRef = doc(db, "users", userId);
       await updateDoc(userRef, { role: newRole });
+<<<<<<< HEAD
       Alert.alert("Success", "User role updated successfully!");
+=======
+      alert("User role updated successfully!");
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
       setUsers(prevUsers =>
         prevUsers.map(user =>
           user.id === userId ? { ...user, role: newRole } : user
@@ -54,9 +66,15 @@ const AdminDashboard = () => {
   const deactivateUser = async (userId) => {
     try {
       const userRef = doc(db, "users", userId);
+<<<<<<< HEAD
       await updateDoc(userRef, { status: "inactive" });
       Alert.alert("Success", "User deactivated successfully!");
       setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+=======
+      await updateDoc(userRef, { status: "inactive" }); // Update status to inactive instead of deleting
+      alert("User deactivated successfully!");
+      setUsers(prevUsers => prevUsers.filter(user => user.id !== userId)); // Remove from local list
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
     } catch (error) {
       console.error("Error deactivating user:", error);
     }
@@ -70,14 +88,22 @@ const AdminDashboard = () => {
 
   const saveEditedUser = async () => {
     if (!updatedUser.name || !updatedUser.email || !updatedUser.role) {
+<<<<<<< HEAD
       Alert.alert("Error", "Please fill out all fields.");
+=======
+      alert("Please fill out all fields.");
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
       return;
     }
 
     try {
       const userRef = doc(db, "users", selectedUser.id);
       await updateDoc(userRef, updatedUser);
+<<<<<<< HEAD
       Alert.alert("Success", "User updated successfully!");
+=======
+      alert("User updated successfully!");
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
       setShowEditModal(false);
       setUsers(prevUsers =>
         prevUsers.map(user =>
@@ -94,6 +120,14 @@ const AdminDashboard = () => {
     setShowViewModal(true);
   };
 
+<<<<<<< HEAD
+=======
+  const addUser = () => {
+    // Logic to add user (you can open a modal or navigate to another screen)
+    alert("Add user functionality will go here");
+  };
+
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
   if (loading) return <Text>Loading users...</Text>;
 
   return (
@@ -104,6 +138,7 @@ const AdminDashboard = () => {
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <View style={styles.tableRow}>
+<<<<<<< HEAD
             {/* Profile Image */}
             <View style={styles.tableCell}>
               <Image
@@ -113,10 +148,21 @@ const AdminDashboard = () => {
             </View>
             
             {/* Name and Role */}
+=======
+            {/* Profile Image (First Column) */}
+            <View style={styles.tableCell}>
+              <Image
+                source={{ uri: item.profilePicture || 'default_image_url_here' }} // Add a default URL if the image is not available
+                style={styles.profileImage}
+              />
+            </View>
+            {/* Name and Role (Second Column) */}
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
             <View style={styles.tableCell}>
               <Text style={styles.userInfo}>{item.name}</Text>
               <Text style={styles.userInfo}>Role: {item.role}</Text>
             </View>
+<<<<<<< HEAD
             
             {/* Role Picker */}
             <View style={styles.tableCell}>
@@ -135,24 +181,58 @@ const AdminDashboard = () => {
             <View style={styles.tableCell}>
               <Ionicons
                 name="eye"
+=======
+            {/* Dropdown for Role Update (Third Column) */}
+            <View style={styles.tableCell}>
+              <RNPickerSelect
+                onValueChange={(value) => {
+                  if (value !== item.role) {
+                    updateUserRole(item.id, value);
+                  }
+                }}
+                items={[
+                  { label: "Admin", value: "admin" },
+                  { label: "Customer", value: "customer" },
+                  { label: "Manager", value: "manager" },
+                ]}
+                value={item.role}
+                style={pickerSelectStyles}
+                useNativeAndroidPickerStyle={false}
+                Icon={() => <Ionicons name="chevron-down" size={18} color="gray" />} // Chevron icon
+              />
+            </View>
+            {/* CRUD Icons for Edit, View, Deactivate */}
+            <View style={styles.tableCell}>
+              <Ionicons
+                name="eye"  // View icon
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
                 size={24}
                 color="blue"
                 style={styles.icon}
                 onPress={() => handleViewUser(item)}
               />
               <Ionicons
+<<<<<<< HEAD
                 name="create"
+=======
+                name="create"  // Edit icon
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
                 size={24}
                 color="orange"
                 style={styles.icon}
                 onPress={() => handleEditUser(item)}
               />
               <FontAwesome
+<<<<<<< HEAD
                 name="trash"
+=======
+                name="trash"  // Deactivate icon (previously delete)
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
                 size={24}
                 color="red"
                 style={styles.icon}
                 onPress={() =>
+<<<<<<< HEAD
                   Alert.alert(
                     "Deactivate User", 
                     "Are you sure you want to deactivate this user?", 
@@ -161,6 +241,12 @@ const AdminDashboard = () => {
                       { text: "Yes", onPress: () => deactivateUser(item.id) },
                     ]
                   )
+=======
+                  Alert.alert("Deactivate User", "Are you sure you want to deactivate this user?", [
+                    { text: "Cancel", style: "cancel" },
+                    { text: "Yes", onPress: () => deactivateUser(item.id) },
+                  ])
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
                 }
               />
             </View>
@@ -190,6 +276,7 @@ const AdminDashboard = () => {
               value={updatedUser.email}
               onChangeText={(text) => setUpdatedUser({ ...updatedUser, email: text })}
             />
+<<<<<<< HEAD
             <Picker
               selectedValue={updatedUser.role}
               style={styles.picker}
@@ -215,6 +302,22 @@ const AdminDashboard = () => {
                 Cancel
               </Button>
             </View>
+=======
+            <RNPickerSelect
+              onValueChange={(value) => setUpdatedUser({ ...updatedUser, role: value })}
+              items={[
+                { label: "Admin", value: "admin" },
+                { label: "Customer", value: "customer" },
+                { label: "Manager", value: "manager" },
+              ]}
+              value={updatedUser.role}
+              style={pickerSelectStyles}
+              useNativeAndroidPickerStyle={false}
+              Icon={() => <Ionicons name="chevron-down" size={18} color="gray" />}
+            />
+            <Button title="Save" onPress={saveEditedUser} />
+            <Button title="Cancel" onPress={() => setShowEditModal(false)} />
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
           </View>
         </View>
       </Modal>
@@ -229,6 +332,7 @@ const AdminDashboard = () => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>User Details</Text>
+<<<<<<< HEAD
             <Image
               source={{ uri: selectedUser?.profilePicture || 'https://via.placeholder.com/150' }}
               style={styles.modalProfileImage}
@@ -243,6 +347,12 @@ const AdminDashboard = () => {
             >
               Close
             </Button>
+=======
+            <Text>Name: {selectedUser?.name}</Text>
+            <Text>Email: {selectedUser?.email}</Text>
+            <Text>Role: {selectedUser?.role}</Text>
+            <Button title="Close" onPress={() => setShowViewModal(false)} />
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
           </View>
         </View>
       </Modal>
@@ -278,6 +388,7 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 50,
     height: 50,
+<<<<<<< HEAD
     borderRadius: 25,
   },
   modalProfileImage: {
@@ -285,15 +396,24 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
     marginBottom: 15,
+=======
+    borderRadius: 25, // Makes the image circular
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
   },
   userInfo: {
     fontSize: 16,
     fontWeight: "bold",
     textAlign: "center",
   },
+<<<<<<< HEAD
   picker: {
     width: 120,
     height: 50,
+=======
+  dropdown: {
+    height: 40,
+    width: 150,
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
   },
   icon: {
     marginHorizontal: 5,
@@ -305,7 +425,11 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
+<<<<<<< HEAD
     width: '80%',
+=======
+    width: 300,
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
     padding: 20,
     backgroundColor: "white",
     borderRadius: 10,
@@ -318,13 +442,18 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 40,
+<<<<<<< HEAD
     width: '100%',
+=======
+    width: 200,
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
     borderColor: "gray",
     borderWidth: 1,
     marginBottom: 10,
     paddingLeft: 10,
     borderRadius: 5,
   },
+<<<<<<< HEAD
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -338,3 +467,27 @@ const styles = StyleSheet.create({
 });
 
 export default AdminDashboard;
+=======
+});
+
+const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
+    height: 30,
+    width: 120,
+    backgroundColor: 'lightgray',
+    borderRadius: 5,
+    paddingLeft: 10,
+    fontSize: 14,
+  },
+  inputAndroid: {
+    height: 30,
+    width: 120,
+    backgroundColor: 'lightgray',
+    borderRadius: 5,
+    paddingLeft: 10,
+    fontSize: 14,
+  },
+});
+
+export default AdminDashboard;
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db

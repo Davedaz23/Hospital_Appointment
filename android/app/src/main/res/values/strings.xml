@@ -1,6 +1,14 @@
 <resources>
+<<<<<<< HEAD
   <string name="app_name">hospital-appointment</string>
   <string name="expo_splash_screen_resize_mode" translatable="false">contain</string>
   <string name="expo_splash_screen_status_bar_translucent" translatable="false">false</string>
   <string name="expo_system_ui_user_interface_style" translatable="false">light</string>
+=======
+  <string name="app_name">my-native</string>
+  <string name="expo_splash_screen_resize_mode" translatable="false">contain</string>
+  <string name="expo_splash_screen_status_bar_translucent" translatable="false">false</string>
+  <string name="expo_system_ui_user_interface_style" translatable="false">light</string>
+  <string name="expo_runtime_version">1.0.0</string>
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
 </resources>

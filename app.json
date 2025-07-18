@@ -2,16 +2,37 @@
   "expo": {
     "name": "hospital-appointment",
     "slug": "hospital-appointment",
+<<<<<<< HEAD
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash-icon.png",
+=======
+    "version": "1.0.34",
+    "orientation": "portrait",
+    "icon": "./src/assets/icon.png",
+    "userInterfaceStyle": "light",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "runtimeVersion": "1.0.0",
+    "sdkVersion": "52.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/2ca8ee04-db13-4cdb-b8c8-cd0d606d54db"
+    },
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./src/assets/splash-icon.png",
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
+<<<<<<< HEAD
       "supportsTablet": true
     },
     "android": {
@@ -31,6 +52,25 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+=======
+      "supportsTablet": true,
+      "bundleIdentifier": "com.medicalappointmentapp",
+      "buildNumber": "1.0.0",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.medicalappointmentapp",
+      "versionCode": 1
+    },
+    "web": {
+      "favicon": "./src/assets/favicon.png"
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
     },
     "extra": {
       "eas": {
@@ -38,12 +78,16 @@
       }
     },
     "plugins": [
+<<<<<<< HEAD
       [
         "expo-image-picker",
         {
           "photosPermission": "Allow access to your photos to select a profile picture."
         }
       ]
+=======
+      "expo-asset"
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
     ]
   }
 }

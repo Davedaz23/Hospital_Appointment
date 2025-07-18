@@ -1,5 +1,6 @@
 {
   "cli": {
+<<<<<<< HEAD
     "version": ">= 16.15.0",
     "appVersionSource": "remote"
   },
@@ -25,10 +26,58 @@
       "android": {
         "buildType": "apk",
         "gradleCommand": ":app:assembleRelease"
+=======
+    "version": ">=16.13.3",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "production": {
+      "android": {
+        "buildType": "app-bundle",
+        "gradleCommand": ":app:bundleRelease",
+        "image": "latest",
+        "credentialsSource": "remote",
+        "withoutCredentials": false,
+        "autoIncrement": "version",
+        "env": {
+          "GOOGLE_SERVICES_JSON": "@google-services-json"
+        }
+      }
+    },
+    "development": {
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug",
+        "developmentClient": true,
+        "image": "latest"
+      }
+    },
+    "preview": {
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease",
+        "image": "latest",
+        "autoIncrement": false,
+        "env": {
+          "GOOGLE_SERVICES_JSON": "@google-services-json"
+        }
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
       }
     }
   },
   "submit": {
+<<<<<<< HEAD
     "production": {}
   }
 }
+=======
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./service-account-key.json",
+        "track": "internal",
+        "releaseStatus": "draft"
+      }
+    }
+  }
+}
+>>>>>>> 1ceabdea72b611baeb802a9fe57d3645a70c23db
