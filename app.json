@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "my-native",
-    "slug": "my-native",
+    "name": "hospital-appointment",
+    "slug": "hospital-appointment",
     "version": "1.0.34",
     "orientation": "portrait",
     "icon": "./src/assets/icon.png",
@@ -10,12 +10,11 @@
       "ios",
       "android",
       "web"
-
     ],
     "runtimeVersion": "1.0.0",
     "sdkVersion": "52.0.0",
     "updates": {
-      "url": "https://u.expo.dev/570fe10c-a217-4e2f-9f81-c7ca732de5ec"
+      "url": "https://u.expo.dev/2ca8ee04-db13-4cdb-b8c8-cd0d606d54db"
     },
     "newArchEnabled": true,
     "splash": {
@@ -44,8 +43,11 @@
     },
     "extra": {
       "eas": {
-        "projectId": "570fe10c-a217-4e2f-9f81-c7ca732de5ec"
+        "projectId": "2ca8ee04-db13-4cdb-b8c8-cd0d606d54db"
       }
-    }
+    },
+    "plugins": [
+      "expo-asset"
+    ]
   }
 }

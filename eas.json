@@ -24,6 +24,17 @@
         "developmentClient": true,
         "image": "latest"
       }
+    },
+    "preview": {
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease",
+        "image": "latest",
+        "autoIncrement": false,
+        "env": {
+          "GOOGLE_SERVICES_JSON": "@google-services-json"
+        }
+      }
     }
   },
   "submit": {
